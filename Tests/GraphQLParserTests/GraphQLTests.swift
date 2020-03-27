@@ -222,12 +222,92 @@ final class GraphQLTests: XCTestCase {
         XCTAssertEqual("{nameone:123,nametwo:abc}", testSubject("{ nameone : 123, nametwo : \"abc\" }"))
     }
 
+    func testListType() {
+        func testSubject(_ str: String) -> String? {
+            graphQlparser.listType.parse(str).match
+        }
+
+        XCTAssertEqual("[Int]", testSubject("[Int]"))
+        XCTAssertEqual("[Int]", testSubject("[ Int ]"))
+        XCTAssertEqual("[[Char]]", testSubject("[ [ Char ] ]"))
+        XCTAssertNil(testSubject("[ ]"))
+        XCTAssertNil(testSubject("[]"))
+        XCTAssertNil(testSubject("[ , ]"))
+    }
+
+    func testNonNullType() {
+        func testSubject(_ str: String) -> String? {
+            graphQlparser.nonNullType.parse(str).match
+        }
+
+        XCTAssertEqual("[Int]!!", testSubject("[Int]!"))
+        XCTAssertEqual("Int!!", testSubject("Int!"))
+    }
+
     func testDefaultValue() {
         func testSubject(_ str: String) -> String? {
             graphQlparser.defaultValue.parse(str).match
         }
+
         XCTAssertEqual("abc", testSubject("= \"abc\""))
         XCTAssertEqual("123", testSubject("=123"))
+    }
+
+    func testVariable() {
+        func testSubject(_ str: String) -> String? {
+            graphQlparser.variable.parse(str).match
+        }
+
+        XCTAssertEqual("abc", testSubject("$abc"))
+        XCTAssertNil(testSubject("abc"))
+    }
+
+    func testVariableDefinition() {
+        func testSubject(_ str: String) -> String? {
+            graphQlparser.variableDefinition.parse(str).match
+        }
+
+        XCTAssertEqual("abc:Int", testSubject("$abc : Int"))
+        XCTAssertEqual("abc:Int=123", testSubject("$abc : Int = 123"))
+        XCTAssertEqual("abc:Int=123", testSubject("$abc:Int=123"))
+    }
+
+    func testArgument() {
+        func testSubject(_ str: String) -> String? {
+            graphQlparser.argument.parse(str).match
+        }
+
+        XCTAssertEqual("abc:xyz", testSubject("abc : \"xyz\""))
+        XCTAssertEqual("abc:123", testSubject("abc : 123"))
+        XCTAssertEqual("abc:123", testSubject("abc:123"))
+    }
+
+    func testArguments() {
+        func testSubject(_ str: String) -> String? {
+            graphQlparser.arguments.parse(str).match
+        }
+
+        XCTAssertEqual("[abc:xyz]", testSubject("(abc : \"xyz\")"))
+        XCTAssertEqual("[abc:123]", testSubject("(abc : 123)"))
+        XCTAssertEqual("[abc:123]", testSubject("(abc:123)"))
+        XCTAssertEqual("[abc:123,def:xyz]", testSubject("(abc : 123, def : \"xyz\")"))
+    }
+
+    func testDirective() {
+        func testSubject(_ str: String) -> String? {
+            graphQlparser.directive.parse(str).match
+        }
+
+        XCTAssertEqual("@named:[abc:xyz]", testSubject("@named (abc : \"xyz\")"))
+        XCTAssertEqual("@named:[abc:xyz]", testSubject("@named(abc : \"xyz\")"))
+    }
+
+    func testDirectives() {
+        func testSubject(_ str: String) -> [String]? {
+            graphQlparser.directives.parse(str).match
+        }
+
+        XCTAssertEqual(["@named:[abc:xyz]", "@other:[abc:xyz]"], testSubject("@named (abc : \"xyz\") @other (abc : \"xyz\")"))
     }
 
     //    func testSandbox() {

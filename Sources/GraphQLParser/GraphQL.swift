@@ -385,9 +385,10 @@ class GraphQL {
         let directive = zip(
             literal("@"),
             name,
+            tokenSeparator,
             maybe(arguments)
         ).map { (arg) -> String in
-            let (_, name, arguments) = arg
+            let (_, name, _, arguments) = arg
             if let arguments = arguments.wrappedValue {
                 return "@\(name):\(arguments)"
             } else {
