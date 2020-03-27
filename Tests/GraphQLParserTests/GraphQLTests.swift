@@ -3,13 +3,11 @@ import XCTest
 
 final class GraphQLTests: XCTestCase {
 
-    override func setUp() {
-        GraphQL.initialise()
-    }
+    var graphQlparser = GraphQL()
 
     func testName() {
         func testSubject(_ str: String) -> String? {
-            GraphQL.name.parse(str).match
+            graphQlparser.name.parse(str).match
         }
 
         XCTAssertEqual("abc", testSubject("abc"))
@@ -22,18 +20,18 @@ final class GraphQLTests: XCTestCase {
     // alias: integerPart
     func testIntValue() {
         func testSubject(_ str: String) -> String? {
-            GraphQL.intValue.parse(str).match
+            graphQlparser.intValue.parse(str).match
         }
         
         XCTAssertEqual("123", testSubject("123"))
         XCTAssertEqual("-123", testSubject("-123"))
         XCTAssertNil(testSubject("0123"))
-        // TODO: XCTAssertEqual("-0", testSubject("-0"))
+        XCTAssertEqual("-0", testSubject("-0"))
     }
 
     func testNegativeSign() {
         func testSubject(_ str: String) -> Character? {
-            GraphQL.negativeSign.parse(str).match
+            graphQlparser.negativeSign.parse(str).match
         }
 
         XCTAssertEqual("-", testSubject("-"))
@@ -44,7 +42,7 @@ final class GraphQLTests: XCTestCase {
 
     func testDigit() {
         func testSubject(_ str: String) -> Character? {
-            GraphQL.digit.parse(str).match
+            graphQlparser.digit.parse(str).match
         }
 
         XCTAssertEqual("0", testSubject("0"))
@@ -61,7 +59,7 @@ final class GraphQLTests: XCTestCase {
 
     func testnonZeroDigit() {
         func testSubject(_ str: String) -> Character? {
-            GraphQL.nonZeroDigit.parse(str).match
+            graphQlparser.nonZeroDigit.parse(str).match
         }
 
         XCTAssertNil(testSubject("0"))
@@ -79,7 +77,7 @@ final class GraphQLTests: XCTestCase {
 
     func testFloatValue() {
         func testSubject(_ str: String) -> String? {
-            GraphQL.floatValue.parse(str).match
+            graphQlparser.floatValue.parse(str).match
         }
 
         XCTAssertEqual("6.0221413:e+23", testSubject("6.0221413e23"))
@@ -89,7 +87,7 @@ final class GraphQLTests: XCTestCase {
 
     func testExponentIndicator() {
         func testSubject(_ str: String) -> Void? {
-            GraphQL.exponentIndicator.parse(str).match
+            graphQlparser.exponentIndicator.parse(str).match
         }
 
         XCTAssertNotNil(testSubject("E"))
@@ -101,7 +99,7 @@ final class GraphQLTests: XCTestCase {
 
     func testExponentPart() {
         func testSubject(_ str: String) -> String? {
-            GraphQL.exponentPart.parse(str).match
+            graphQlparser.exponentPart.parse(str).match
         }
 
         XCTAssertEqual("e+123", testSubject("e123"))
@@ -120,7 +118,7 @@ final class GraphQLTests: XCTestCase {
 
     func testFractionalPart() {
         func testSubject(_ str: String) -> String? {
-            GraphQL.fractionalPart.parse(str).match
+            graphQlparser.fractionalPart.parse(str).match
         }
 
         XCTAssertEqual("123", testSubject(".123"))
@@ -132,7 +130,7 @@ final class GraphQLTests: XCTestCase {
 
     func testSign() {
         func testSubject(_ str: String) -> Character? {
-            GraphQL.sign.parse(str).match
+            graphQlparser.sign.parse(str).match
         }
 
         XCTAssertEqual("+", testSubject("+"))
@@ -144,8 +142,8 @@ final class GraphQLTests: XCTestCase {
 
     func testBooleanValue() {
         func testSubject(_ str: String) -> String? {
-             GraphQL.booleanValue.parse(str).match
-         }
+            graphQlparser.booleanValue.parse(str).match
+        }
 
         XCTAssertEqual("bool(true)", testSubject("true"))
         XCTAssertEqual("bool(false)", testSubject("false"))
@@ -156,8 +154,8 @@ final class GraphQLTests: XCTestCase {
 
     func testStringValue() {
         func testSubject(_ str: String) -> String? {
-             GraphQL.stringValue.parse(str).match
-         }
+            graphQlparser.stringValue.parse(str).match
+        }
 
         XCTAssertEqual("hello sailor", testSubject("\"hello sailor\""))
         XCTAssertEqual(" hello sailor ", testSubject("\" hello sailor \""))
@@ -168,8 +166,8 @@ final class GraphQLTests: XCTestCase {
 
     func testNullValue() {
         func testSubject(_ str: String) -> String? {
-             GraphQL.nullValue.parse(str).match
-         }
+            graphQlparser.nullValue.parse(str).match
+        }
 
         XCTAssertEqual("<null>", testSubject("null"))
         XCTAssertNil(testSubject("012"))
@@ -179,8 +177,8 @@ final class GraphQLTests: XCTestCase {
 
     func testEnumValue() {
         func testSubject(_ str: String) -> String? {
-             GraphQL.enumValue.parse(str).match
-         }
+            graphQlparser.enumValue.parse(str).match
+        }
 
         XCTAssertEqual("abc", testSubject("abc"))
         XCTAssertEqual("abc123", testSubject("abc123"))
@@ -193,8 +191,8 @@ final class GraphQLTests: XCTestCase {
 
     func testListValue() {
         func testSubject(_ str: String) -> String? {
-             GraphQL.listValue.parse(str).match
-         }
+            graphQlparser.listValue.parse(str).match
+        }
 
         XCTAssertEqual("[]", testSubject("[ ]"))
         XCTAssertEqual("[]", testSubject("[]"))
@@ -205,8 +203,8 @@ final class GraphQLTests: XCTestCase {
 
     func testObjectValue() {
         func testSubject(_ str: String) -> String? {
-             GraphQL.objectValue.parse(str).match
-         }
+            graphQlparser.objectValue.parse(str).match
+        }
         XCTAssertEqual("{}", testSubject("{}"))
         XCTAssertEqual("{}", testSubject("{ }"))
         XCTAssertEqual("{}", testSubject("{ , }"))
@@ -215,7 +213,7 @@ final class GraphQLTests: XCTestCase {
         XCTAssertEqual("{nameone:123,nametwo:abc}", testSubject("{ nameone : 123, nametwo : \"abc\" }"))
     }
 
-//    func testSandbox() {
-//        dump(GraphQL.selectionSet.parse("{ hello, world }"))
-//    }
+    //    func testSandbox() {
+    //        dump(graphQlparser.selectionSet.parse("{ hello, world }"))
+    //    }
 }
