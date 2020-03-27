@@ -17,18 +17,6 @@ final class GraphQLTests: XCTestCase {
         XCTAssertNil(testSubject("123"))
     }
 
-    // alias: integerPart
-    func testIntValue() {
-        func testSubject(_ str: String) -> String? {
-            graphQlparser.intValue.parse(str).match
-        }
-        
-        XCTAssertEqual("123", testSubject("123"))
-        XCTAssertEqual("-123", testSubject("-123"))
-        XCTAssertNil(testSubject("0123"))
-        XCTAssertEqual("-0", testSubject("-0"))
-    }
-
     func testNegativeSign() {
         func testSubject(_ str: String) -> Character? {
             graphQlparser.negativeSign.parse(str).match
@@ -75,14 +63,16 @@ final class GraphQLTests: XCTestCase {
         XCTAssertEqual("9", testSubject("9"))
     }
 
-    func testFloatValue() {
+    // alias: integerPart
+    func testIntValue() {
         func testSubject(_ str: String) -> String? {
-            graphQlparser.floatValue.parse(str).match
+            graphQlparser.intValue.parse(str).match
         }
-
-        XCTAssertEqual("6.0221413:e+23", testSubject("6.0221413e23"))
-        XCTAssertEqual("6.123", testSubject("6.123"))
-        XCTAssertEqual("1:e+10", testSubject("1e10"))
+        
+        XCTAssertEqual("123", testSubject("123"))
+        XCTAssertEqual("-123", testSubject("-123"))
+        XCTAssertNil(testSubject("0123"))
+        XCTAssertEqual("-0", testSubject("-0"))
     }
 
     func testExponentIndicator() {
@@ -95,6 +85,30 @@ final class GraphQLTests: XCTestCase {
         XCTAssertNil(testSubject("a"))
         XCTAssertNil(testSubject("1"))
         XCTAssertNil(testSubject(" "))
+    }
+
+    func testSign() {
+        func testSubject(_ str: String) -> Character? {
+            graphQlparser.sign.parse(str).match
+        }
+
+        XCTAssertEqual("+", testSubject("+"))
+        XCTAssertEqual("-", testSubject("-"))
+        XCTAssertNil(testSubject("a"))
+        XCTAssertNil(testSubject("1"))
+        XCTAssertNil(testSubject(" "))
+    }
+
+    func testFractionalPart() {
+        func testSubject(_ str: String) -> String? {
+            graphQlparser.fractionalPart.parse(str).match
+        }
+
+        XCTAssertEqual("123", testSubject(".123"))
+        XCTAssertEqual("012", testSubject(".012"))
+        XCTAssertNil(testSubject("012"))
+        XCTAssertNil(testSubject("."))
+        XCTAssertNil(testSubject("a"))
     }
 
     func testExponentPart() {
@@ -116,28 +130,14 @@ final class GraphQLTests: XCTestCase {
         XCTAssertNil(testSubject(" "))
     }
 
-    func testFractionalPart() {
+    func testFloatValue() {
         func testSubject(_ str: String) -> String? {
-            graphQlparser.fractionalPart.parse(str).match
+            graphQlparser.floatValue.parse(str).match
         }
 
-        XCTAssertEqual("123", testSubject(".123"))
-        XCTAssertEqual("012", testSubject(".012"))
-        XCTAssertNil(testSubject("012"))
-        XCTAssertNil(testSubject("."))
-        XCTAssertNil(testSubject("a"))
-    }
-
-    func testSign() {
-        func testSubject(_ str: String) -> Character? {
-            graphQlparser.sign.parse(str).match
-        }
-
-        XCTAssertEqual("+", testSubject("+"))
-        XCTAssertEqual("-", testSubject("-"))
-        XCTAssertNil(testSubject("a"))
-        XCTAssertNil(testSubject("1"))
-        XCTAssertNil(testSubject(" "))
+        XCTAssertEqual("6.0221413:e+23", testSubject("6.0221413e23"))
+        XCTAssertEqual("6.123", testSubject("6.123"))
+        XCTAssertEqual("1:e+10", testSubject("1e10"))
     }
 
     func testBooleanValue() {
@@ -160,6 +160,7 @@ final class GraphQLTests: XCTestCase {
         XCTAssertEqual("hello sailor", testSubject("\"hello sailor\""))
         XCTAssertEqual(" hello sailor ", testSubject("\" hello sailor \""))
         XCTAssertEqual("123 abc", testSubject("\"123 abc\""))
+        XCTAssertEqual("", testSubject("\"\""))
         XCTAssertNil(testSubject("hello sailor\""))
         XCTAssertNil(testSubject("\"hello sailor"))
     }
@@ -201,6 +202,14 @@ final class GraphQLTests: XCTestCase {
         XCTAssertEqual("[bool(true),bool(false)]", testSubject("[ true, false ]"))
     }
 
+    func testObjectField() {
+        func testSubject(_ str: String) -> String? {
+            graphQlparser.objectField.parse(str).match
+        }
+        XCTAssertEqual("name:123", testSubject("name : 123"))
+        XCTAssertEqual("name:abc", testSubject("name : \"abc\""))
+    }
+
     func testObjectValue() {
         func testSubject(_ str: String) -> String? {
             graphQlparser.objectValue.parse(str).match
@@ -211,6 +220,14 @@ final class GraphQLTests: XCTestCase {
         XCTAssertEqual("{name:123}", testSubject("{name:123}"))
         XCTAssertEqual("{name:123}", testSubject("{ name : 123 }"))
         XCTAssertEqual("{nameone:123,nametwo:abc}", testSubject("{ nameone : 123, nametwo : \"abc\" }"))
+    }
+
+    func testDefaultValue() {
+        func testSubject(_ str: String) -> String? {
+            graphQlparser.defaultValue.parse(str).match
+        }
+        XCTAssertEqual("abc", testSubject("= \"abc\""))
+        XCTAssertEqual("123", testSubject("=123"))
     }
 
     //    func testSandbox() {

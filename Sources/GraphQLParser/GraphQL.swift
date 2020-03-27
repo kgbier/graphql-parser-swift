@@ -256,11 +256,6 @@ class GraphQL {
         ])
         self.listValue = listValue
 
-        // variable -> " '$' name "
-        let variable = zip(literal("$"), name)
-            .map{ _, n in n }
-        self.variable = variable
-
         // objectField -> " name ':' value "
         let objectField = zip(
             name,
@@ -328,6 +323,11 @@ class GraphQL {
             value
         ).map{ _, _, v in v}
         self.defaultValue = defaultValue
+
+        // variable -> " '$' name "
+        let variable = zip(literal("$"), name)
+            .map{ _, n in n }
+        self.variable = variable
 
         // variableDefinition -> " variable ':' type defaultValue? "
         let variableDefinition = zip(
@@ -576,7 +576,6 @@ class GraphQL {
     let nullValue: Parser<String>
     let enumValue: Parser<String>
     let listValue: Parser<String>
-    let variable: Parser<String>
     let objectField: Parser<String>
     let objectValue: Parser<String>
     let type: Parser<String>
@@ -584,6 +583,7 @@ class GraphQL {
     let listType: Parser<String>
     let nonNullType: Parser<String>
     let defaultValue: Parser<String>
+    let variable: Parser<String>
     let variableDefinition: Parser<String>
     let variableDefinitions: Parser<[String]>
     let argument: Parser<String>
