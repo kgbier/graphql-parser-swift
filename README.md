@@ -1,6 +1,8 @@
 # GraphQLParser
 ### Konrad Biernacki (<kgbier@gmail.com>)
 
+![Swift](https://github.com/kgbier/graphql-parser-swift/workflows/Swift/badge.svg)
+
 A utility for parsing GraphQL queries.
 
 Current functionality is limited to understanding a GraphQL Query as detailed in the
