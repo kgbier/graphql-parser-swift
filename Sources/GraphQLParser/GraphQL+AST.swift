@@ -1,4 +1,5 @@
 extension GraphQL {
+
     struct Document {
         let definitions: [Definition]
     }

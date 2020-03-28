@@ -596,60 +596,60 @@ class GraphQL {
         ])
     }
 
-    let sourceChar: Parser<Character>
-    let name: Parser<String>
-    let whiteSpace: Parser<Void>
-    let lineTerminator: Parser<Void>
-    let comma: Parser<Void>
-    let commentChar: Parser<Character>
-    let comment: Parser<Void>
-    let tokenSeparator: Parser<Void>
-    let value: Parser<Value>
-    let negativeSign: Parser<Character>
-    let digit: Parser<Character>
-    let nonZeroDigit: Parser<Character>
-    let integerPart: Parser<String>
-    let intValue: Parser<Value>
-    let exponentIndicator: Parser<Void>
-    let sign: Parser<FloatingPointSign>
-    let fractionalPart: Parser<String>
-    let exponentPart: Parser<String>
-    let floatValue: Parser<Value>
-    let booleanValue: Parser<Value>
-    let escapedUnicode: Parser<Character>
-    let escapedCharacter: Parser<Character>
-    let stringCharacter: Parser<Character>
-    let stringValue: Parser<Value>
-    let nullValue: Parser<Value>
-    let enumValue: Parser<Value>
-    let listValue: Parser<Value>
-    let objectField: Parser<ObjectField>
-    let objectValue: Parser<Value>
-    let type: Parser<String>
-    let namedType: Parser<String>
-    let listType: Parser<String>
-    let nonNullType: Parser<String>
-    let defaultValue: Parser<Value>
-    let variable: Parser<String>
-    let variableValue: Parser<Value>
-    let variableDefinition: Parser<VariableDefinition>
-    let variableDefinitions: Parser<[VariableDefinition]>
-    let argument: Parser<Argument>
-    let arguments: Parser<[Argument]>
-    let directive: Parser<Directive>
-    let directives: Parser<[Directive]>
-    let selection: Parser<Selection>
-    let selectionSet: Parser<[Selection]>
-    let alias: Parser<String>
-    let field: Parser<Field>
-    let fragmentName: Parser<String>
-    let fragmentSpread: Parser<FragmentSpread>
-    let typeCondition: Parser<TypeCondition>
-    let fragmentDefinition: Parser<FragmentDefinition>
-    let inlineFragment: Parser<InlineFragment>
-    let operationType: Parser<OperationType>
-    let operationDefinition: Parser<OperationDefinition>
-    let executableDefinition: Parser<ExecutableDefinition>
-    let definition: Parser<Definition>
-    let document: Parser<Document>
+    internal let sourceChar: Parser<Character>
+    internal let name: Parser<String>
+    internal let whiteSpace: Parser<Void>
+    internal let lineTerminator: Parser<Void>
+    internal let comma: Parser<Void>
+    internal let commentChar: Parser<Character>
+    internal let comment: Parser<Void>
+    internal let tokenSeparator: Parser<Void>
+    internal let value: Parser<Value>
+    internal let negativeSign: Parser<Character>
+    internal let digit: Parser<Character>
+    internal let nonZeroDigit: Parser<Character>
+    internal let integerPart: Parser<String>
+    internal let intValue: Parser<Value>
+    internal let exponentIndicator: Parser<Void>
+    internal let sign: Parser<FloatingPointSign>
+    internal let fractionalPart: Parser<String>
+    internal let exponentPart: Parser<String>
+    internal let floatValue: Parser<Value>
+    internal let booleanValue: Parser<Value>
+    internal let escapedUnicode: Parser<Character>
+    internal let escapedCharacter: Parser<Character>
+    internal let stringCharacter: Parser<Character>
+    internal let stringValue: Parser<Value>
+    internal let nullValue: Parser<Value>
+    internal let enumValue: Parser<Value>
+    internal let listValue: Parser<Value>
+    internal let objectField: Parser<ObjectField>
+    internal let objectValue: Parser<Value>
+    internal let type: Parser<String>
+    internal let namedType: Parser<String>
+    internal let listType: Parser<String>
+    internal let nonNullType: Parser<String>
+    internal let defaultValue: Parser<Value>
+    internal let variable: Parser<String>
+    internal let variableValue: Parser<Value>
+    internal let variableDefinition: Parser<VariableDefinition>
+    internal let variableDefinitions: Parser<[VariableDefinition]>
+    internal let argument: Parser<Argument>
+    internal let arguments: Parser<[Argument]>
+    internal let directive: Parser<Directive>
+    internal let directives: Parser<[Directive]>
+    internal let selection: Parser<Selection>
+    internal let selectionSet: Parser<[Selection]>
+    internal let alias: Parser<String>
+    internal let field: Parser<Field>
+    internal let fragmentName: Parser<String>
+    internal let fragmentSpread: Parser<FragmentSpread>
+    internal let typeCondition: Parser<TypeCondition>
+    internal let fragmentDefinition: Parser<FragmentDefinition>
+    internal let inlineFragment: Parser<InlineFragment>
+    internal let operationType: Parser<OperationType>
+    internal let operationDefinition: Parser<OperationDefinition>
+    internal let executableDefinition: Parser<ExecutableDefinition>
+    internal let definition: Parser<Definition>
+    internal let document: Parser<Document>
 }

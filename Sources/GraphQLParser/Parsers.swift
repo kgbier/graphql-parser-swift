@@ -3,18 +3,6 @@ func always<A>( _ a: A) -> Parser<A> {
     return Parser<A> { _ in a }
 }
 
-//func flatMap<B>(_ f: @escaping (A) -> Parser<B> ) -> Parser<B> {
-//    return Parser<B> { str -> B? in
-//        let original = str
-//        let matchA = self.parse(&str)
-//        let parserB = matchA.map(f)
-//        guard let matchB = parserB?.parse(&str) else {
-//            str = original
-//            return nil
-//        }
-//        return matchB
-//    }
-//}
 func deferred<B>(_ f: @escaping () -> Parser<B> ) -> Parser<B> {
     return Parser<B> { str -> B? in
         f().parse(&str)
