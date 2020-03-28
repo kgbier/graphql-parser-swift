@@ -527,9 +527,9 @@ class GraphQL {
 
         // operationType -> [ 'query' 'mutation' 'subscription' ]
         let operationType = oneOf([
-            literal("query").map { "query" },
-            literal("mutation").map { "mutation" },
-            literal("subscription").map { "subscription" },
+            literal("query").map { OperationType.query },
+            literal("mutation").map { .mutation },
+            literal("subscription").map { .subscription },
         ])
         self.operationType = operationType
 
@@ -649,7 +649,7 @@ class GraphQL {
     let typeCondition: Parser<String>
     let fragmentDefinition: Parser<FragmentDefinition>
     let inlineFragment: Parser<String>
-    let operationType: Parser<String>
+    let operationType: Parser<OperationType>
     let operationDefinition: Parser<OperationDefinition>
     let executableDefinition: Parser<ExecutableDefinition>
     let definition: Parser<Definition>

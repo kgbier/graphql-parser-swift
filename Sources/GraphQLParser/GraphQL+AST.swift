@@ -17,7 +17,7 @@ extension GraphQL {
         case selectionSet(selectionSet: String)
 
         struct Operation {
-            let operationType: String
+            let operationType: OperationType
             let name: String?
             let variableDefinitions: [String]
             let directives: [String]
@@ -31,4 +31,11 @@ extension GraphQL {
         let directives: [String]
         let selectionSet: String
     }
+
+    enum OperationType {
+        case query
+        case mutation
+        case subscription
+    }
+
 }

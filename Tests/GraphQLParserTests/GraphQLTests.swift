@@ -308,7 +308,8 @@ final class GraphQLTests: XCTestCase {
             graphQlparser.directives.parse(str).match
         }
 
-        XCTAssertEqual(["@named[abc:xyz]", "@other[abc:xyz]"], testSubject("@named (abc : \"xyz\") @other (abc : \"xyz\")"))
+        XCTAssertEqual(["@named[abc:xyz]", "@other[abc:xyz]"],
+                       testSubject("@named (abc : \"xyz\") @other (abc : \"xyz\")"))
     }
 
     func testSelection() {
@@ -383,10 +384,14 @@ final class GraphQLTests: XCTestCase {
             graphQlparser.fragmentDefinition.parse(str).match
         }
 
-        XCTAssertEqual(GraphQL.FragmentDefinition(name: "named", typeCondition: "typename", directives: [], selectionSet: "{}"), testSubject("fragment named on typename {}"))
-        XCTAssertEqual(GraphQL.FragmentDefinition(name: "named", typeCondition: "typename", directives: [], selectionSet: "{}"), testSubject("fragment named on typename{}"))
-        XCTAssertEqual(GraphQL.FragmentDefinition(name: "named", typeCondition: "typename", directives: ["@annotation[]"], selectionSet: "{}"), testSubject("fragment named on typename @annotation {}"))
-        XCTAssertEqual(GraphQL.FragmentDefinition(name: "named", typeCondition: "typename", directives: ["@annotation[]"], selectionSet: "{}"), testSubject("fragment named on typename@annotation{}"))
+        XCTAssertEqual(GraphQL.FragmentDefinition(name: "named", typeCondition: "typename", directives: [], selectionSet: "{}"),
+                       testSubject("fragment named on typename {}"))
+        XCTAssertEqual(GraphQL.FragmentDefinition(name: "named", typeCondition: "typename", directives: [], selectionSet: "{}"),
+                       testSubject("fragment named on typename{}"))
+        XCTAssertEqual(GraphQL.FragmentDefinition(name: "named", typeCondition: "typename", directives: ["@annotation[]"], selectionSet: "{}"),
+                       testSubject("fragment named on typename @annotation {}"))
+        XCTAssertEqual(GraphQL.FragmentDefinition(name: "named", typeCondition: "typename", directives: ["@annotation[]"], selectionSet: "{}"),
+                       testSubject("fragment named on typename@annotation{}"))
         // XCTAssertNil(testSubject("fragmentnamed on typename{}")) // FIXME: Fix this neatly
         XCTAssertNil(testSubject("fragment namedon typename{}"))
         // XCTAssertNil(testSubject("fragment named ontypename{}")) // FIXME: Fix this neatly
@@ -404,13 +409,13 @@ final class GraphQLTests: XCTestCase {
     }
 
     func testOperationType() {
-        func testSubject(_ str: String) -> String? {
+        func testSubject(_ str: String) -> GraphQL.OperationType? {
             graphQlparser.operationType.parse(str).match
         }
 
-        XCTAssertEqual("query", testSubject("query"))
-        XCTAssertEqual("mutation", testSubject("mutation"))
-        XCTAssertEqual("subscription", testSubject("subscription"))
+        XCTAssertEqual(.query, testSubject("query"))
+        XCTAssertEqual(.mutation, testSubject("mutation"))
+        XCTAssertEqual(.subscription, testSubject("subscription"))
         XCTAssertNil(testSubject("a"))
         XCTAssertNil(testSubject("1"))
         XCTAssertNil(testSubject(" "))
@@ -421,47 +426,23 @@ final class GraphQLTests: XCTestCase {
             graphQlparser.operationDefinition.parse(str).match
         }
 
-        XCTAssertEqual(GraphQL.OperationDefinition.selectionSet(selectionSet: "{}"), testSubject("{}"))
-        XCTAssertEqual(
-            GraphQL.OperationDefinition.operation(
-                definition: GraphQL.OperationDefinition.Operation(operationType: "query", name: nil, variableDefinitions: [], directives: [], selectionSet: nil)),
-            testSubject("query")
-        )
-        XCTAssertEqual(
-            GraphQL.OperationDefinition.operation(
-                definition: GraphQL.OperationDefinition.Operation(operationType: "query", name: "named", variableDefinitions: [], directives: [], selectionSet: nil)),
-            testSubject("query named")
-        )
-        XCTAssertEqual(
-            GraphQL.OperationDefinition.operation(
-                definition: GraphQL.OperationDefinition.Operation(operationType: "query", name: nil, variableDefinitions: ["abc:Int", "xyz:Int"], directives: [], selectionSet: nil)),
-            testSubject("query ($abc:Int, $xyz:Int)")
-        )
-        XCTAssertEqual(
-            GraphQL.OperationDefinition.operation(
-                definition: GraphQL.OperationDefinition.Operation(operationType: "query", name: nil, variableDefinitions: [], directives: ["@annotated[]", "@with[]"], selectionSet: nil)),
-            testSubject("query @annotated @with")
-        )
-        XCTAssertEqual(
-            GraphQL.OperationDefinition.operation(
-                definition: GraphQL.OperationDefinition.Operation(operationType: "query", name: nil, variableDefinitions: [], directives: [], selectionSet: "{}")),
-            testSubject("query {}")
-        )
-        XCTAssertEqual(
-            GraphQL.OperationDefinition.operation(
-                definition: GraphQL.OperationDefinition.Operation(operationType: "query", name: "named", variableDefinitions: ["abc:Int"], directives: ["@annotated[]"], selectionSet: "{}")),
-            testSubject("query named ($abc: Int) @annotated {}")
-        )
-        XCTAssertEqual(
-            GraphQL.OperationDefinition.operation(
-                definition: GraphQL.OperationDefinition.Operation(operationType: "mutation", name: "named", variableDefinitions: ["abc:Int"], directives: ["@annotated[]"], selectionSet: "{}")),
-            testSubject("mutation named ($abc: Int) @annotated {}")
-        )
-        XCTAssertEqual(
-            GraphQL.OperationDefinition.operation(
-                definition: GraphQL.OperationDefinition.Operation(operationType: "subscription", name: "named", variableDefinitions: ["abc:Int"], directives: ["@annotated[]"], selectionSet: "{}")),
-            testSubject("subscription named ($abc: Int) @annotated {}")
-        )
+        XCTAssertEqual(.selectionSet(selectionSet: "{}"), testSubject("{}"))
+        XCTAssertEqual(.operation(definition: GraphQL.OperationDefinition.Operation(operationType: .query, name: nil, variableDefinitions: [], directives: [], selectionSet: nil)),
+                       testSubject("query"))
+        XCTAssertEqual(.operation(definition: GraphQL.OperationDefinition.Operation(operationType: .query, name: "named", variableDefinitions: [], directives: [], selectionSet: nil)),
+                       testSubject("query named"))
+        XCTAssertEqual(.operation(definition: GraphQL.OperationDefinition.Operation(operationType: .query, name: nil, variableDefinitions: ["abc:Int", "xyz:Int"], directives: [], selectionSet: nil)),
+                       testSubject("query ($abc:Int, $xyz:Int)"))
+        XCTAssertEqual(.operation(definition: GraphQL.OperationDefinition.Operation(operationType: .query, name: nil, variableDefinitions: [], directives: ["@annotated[]", "@with[]"], selectionSet: nil)),
+                       testSubject("query @annotated @with"))
+        XCTAssertEqual(.operation(definition: GraphQL.OperationDefinition.Operation(operationType: .query, name: nil, variableDefinitions: [], directives: [], selectionSet: "{}")),
+                       testSubject("query {}"))
+        XCTAssertEqual(.operation(definition: GraphQL.OperationDefinition.Operation(operationType: .query, name: "named", variableDefinitions: ["abc:Int"], directives: ["@annotated[]"], selectionSet: "{}")),
+                       testSubject("query named ($abc: Int) @annotated {}"))
+        XCTAssertEqual(.operation(definition: GraphQL.OperationDefinition.Operation(operationType: .mutation, name: "named", variableDefinitions: ["abc:Int"], directives: ["@annotated[]"], selectionSet: "{}")),
+                       testSubject("mutation named ($abc: Int) @annotated {}"))
+        XCTAssertEqual(.operation(definition: GraphQL.OperationDefinition.Operation(operationType: .subscription, name: "named", variableDefinitions: ["abc:Int"], directives: ["@annotated[]"], selectionSet: "{}")),
+                       testSubject("subscription named ($abc: Int) @annotated {}"))
         XCTAssertNil(testSubject("invalid named ($abc: Int) @annotated {}"))
     }
 
@@ -470,16 +451,12 @@ final class GraphQLTests: XCTestCase {
             graphQlparser.executableDefinition.parse(str).match
         }
 
-        XCTAssertEqual(
-            GraphQL.ExecutableDefinition.operation(definition: GraphQL.OperationDefinition.operation(
-                definition: GraphQL.OperationDefinition.Operation(operationType: "query", name: "named", variableDefinitions: ["abc:Int"], directives: ["@annotated[]"], selectionSet: "{}"))),
-            testSubject("query named ($abc: Int) @annotated {}")
-        )
-        XCTAssertEqual(
-            GraphQL.ExecutableDefinition.fragment(
-                definition: GraphQL.FragmentDefinition(name: "named", typeCondition: "typename", directives: ["@annotation[]"], selectionSet: "{}")),
-            testSubject("fragment named on typename @annotation {}")
-        )
+        XCTAssertEqual(.operation(definition: .selectionSet(selectionSet: "{}")),
+                       testSubject("{}"))
+        XCTAssertEqual(.operation(definition: .operation(definition: GraphQL.OperationDefinition.Operation(operationType: .query, name: "named", variableDefinitions: ["abc:Int"], directives: ["@annotated[]"], selectionSet: "{}"))),
+                       testSubject("query named ($abc: Int) @annotated {}"))
+        XCTAssertEqual(.fragment(definition: GraphQL.FragmentDefinition(name: "named", typeCondition: "typename", directives: ["@annotation[]"], selectionSet: "{}")),
+                       testSubject("fragment named on typename @annotation {}"))
     }
 
     func testDocument() {
@@ -489,9 +466,9 @@ final class GraphQLTests: XCTestCase {
 
         XCTAssertEqual(
             GraphQL.Document(definitions: [
-                GraphQL.Definition.executable(definition: GraphQL.ExecutableDefinition.operation(definition: GraphQL.OperationDefinition.operation(
-                    definition: GraphQL.OperationDefinition.Operation(operationType: "query", name: "named", variableDefinitions: ["abc:Int"], directives: ["@annotated[]"], selectionSet: "{}")))),
-                GraphQL.Definition.executable(definition: GraphQL.ExecutableDefinition.fragment(
+                .executable(definition: .operation(definition: GraphQL.OperationDefinition.operation(
+                    definition: GraphQL.OperationDefinition.Operation(operationType: .query, name: "named", variableDefinitions: ["abc:Int"], directives: ["@annotated[]"], selectionSet: "{}")))),
+                .executable(definition: .fragment(
                     definition: GraphQL.FragmentDefinition(name: "named", typeCondition: "typename", directives: ["@annotation[]"], selectionSet: "{}")))
             ]),
             testSubject("query named ($abc: Int) @annotated {} \n fragment named on typename @annotation {}")
