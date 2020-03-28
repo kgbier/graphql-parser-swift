@@ -313,12 +313,18 @@ final class GraphQLTests: XCTestCase {
     }
 
     func testSelection() {
-        func testSubject(_ str: String) -> String? {
+        func testSubject(_ str: String) -> [GraphQL.Selection]? {
             graphQlparser.selectionSet.parse(str).match
         }
 
-        XCTAssertEqual("{:abc(),:def(),:xyz()}", testSubject("{abc def,xyz}"))
-        XCTAssertEqual("{:abc(),:def(),:xyz()}", testSubject("{ abc def,xyz }"))
+        XCTAssertEqual([.field(selection: .init(alias: nil, name: "abc", arguments: [], directives: [], selectionSet: [])),
+                        .field(selection: .init(alias: nil, name: "def", arguments: [], directives: [], selectionSet: [])),
+                        .field(selection: .init(alias: nil, name: "xyz", arguments: [], directives: [], selectionSet: []))],
+                       testSubject("{abc def,xyz}"))
+        XCTAssertEqual([.field(selection: .init(alias: nil, name: "abc", arguments: [], directives: [], selectionSet: [])),
+                        .field(selection: .init(alias: nil, name: "def", arguments: [], directives: [], selectionSet: [])),
+                        .field(selection: .init(alias: nil, name: "xyz", arguments: [], directives: [], selectionSet: []))],
+                       testSubject("{ abc def,xyz }"))
     }
 
     func testAlias() {
@@ -333,16 +339,24 @@ final class GraphQLTests: XCTestCase {
     }
 
     func testField() {
-        func testSubject(_ str: String) -> String? {
+        func testSubject(_ str: String) -> GraphQL.Field? {
             graphQlparser.field.parse(str).match
         }
 
-        XCTAssertEqual(":named()", testSubject("named"))
-        XCTAssertEqual("aliased:named()", testSubject("aliased:named"))
-        XCTAssertEqual(":named()@annotated[]", testSubject("named@annotated"))
-        XCTAssertEqual(":named()@annotated[with:123]", testSubject("named@annotated(with:123)"))
-        XCTAssertEqual("alias:named(with:123)@annotated[with:456]{:also()}", testSubject("alias:named(with:123)@annotated(with:456){ also }"))
-        XCTAssertEqual("alias:named(with:123)@annotated[with:456]{:also()}", testSubject("alias : named ( with : 123 ) @annotated ( with: 456 ) { also }"))
+        XCTAssertEqual(GraphQL.Field(alias: nil, name: "named", arguments: [], directives: [], selectionSet: []),
+                       testSubject("named"))
+        XCTAssertEqual(GraphQL.Field(alias: "aliased", name: "named", arguments: [], directives: [], selectionSet: []),
+                       testSubject("aliased:named"))
+        XCTAssertEqual(GraphQL.Field(alias: nil, name: "named", arguments: ["with:123"], directives: [], selectionSet: []),
+                       testSubject("named(with:123)"))
+        XCTAssertEqual(GraphQL.Field(alias: nil, name: "named", arguments: [], directives: ["@annotated[]"], selectionSet: []),
+                       testSubject("named@annotated"))
+        XCTAssertEqual(GraphQL.Field(alias: nil, name: "named", arguments: [], directives: ["@annotated[with:123]"], selectionSet: []),
+                       testSubject("named@annotated(with:123)"))
+        XCTAssertEqual(GraphQL.Field(alias: "alias", name: "named", arguments: ["with:123"], directives: ["@annotated[with:456]"], selectionSet: [.field(selection: .init(alias: nil, name: "also", arguments: [], directives: [], selectionSet: []))]),
+                       testSubject("alias:named(with:123)@annotated(with:456){ also }"))
+        XCTAssertEqual(GraphQL.Field(alias: "alias", name: "named", arguments: ["with:123"], directives: ["@annotated[with:456]"], selectionSet: [.field(selection: .init(alias: nil, name: "also", arguments: [], directives: [], selectionSet: []))]),
+                       testSubject("alias : named ( with : 123 ) @annotated ( with: 456 ) { also }"))
     }
 
     func testFragmentName() {
@@ -356,24 +370,24 @@ final class GraphQLTests: XCTestCase {
     }
 
     func testFragmentSpread() {
-        func testSubject(_ str: String) -> String? {
+        func testSubject(_ str: String) -> GraphQL.FragmentSpread? {
             graphQlparser.fragmentSpread.parse(str).match
         }
 
-        XCTAssertEqual("named", testSubject("...named"))
-        XCTAssertEqual("named@annotated[]", testSubject("...named@annotated"))
-        XCTAssertEqual("Named@annotated[]", testSubject("... Named @annotated"))
+        XCTAssertEqual(GraphQL.FragmentSpread(name: "named", directives: []), testSubject("...named"))
+        XCTAssertEqual(GraphQL.FragmentSpread(name: "named", directives: ["@annotated[]"]), testSubject("...named@annotated"))
+        XCTAssertEqual(GraphQL.FragmentSpread(name: "Named", directives: ["@annotated[]"]), testSubject("... Named @annotated"))
         XCTAssertNil(testSubject("..."))
         XCTAssertNil(testSubject("... 123"))
     }
 
     func testTypeCondition() {
-        func testSubject(_ str: String) -> String? {
+        func testSubject(_ str: String) -> GraphQL.TypeCondition? {
             graphQlparser.typeCondition.parse(str).match
         }
 
-        XCTAssertEqual("named", testSubject("on named"))
-        XCTAssertEqual("Named", testSubject("on Named"))
+        XCTAssertEqual(GraphQL.TypeCondition(namedType: "named"), testSubject("on named"))
+        XCTAssertEqual(GraphQL.TypeCondition(namedType: "Named"), testSubject("on Named"))
         XCTAssertNil(testSubject("on"))
         XCTAssertNil(testSubject("abc"))
         // XCTAssertNil(testSubject("onnamed")) // FIXME: Fix this neatly
@@ -384,13 +398,13 @@ final class GraphQLTests: XCTestCase {
             graphQlparser.fragmentDefinition.parse(str).match
         }
 
-        XCTAssertEqual(GraphQL.FragmentDefinition(name: "named", typeCondition: "typename", directives: [], selectionSet: "{}"),
+        XCTAssertEqual(.init(name: "named", typeCondition: .init(namedType: "typename"), directives: [], selectionSet: []),
                        testSubject("fragment named on typename {}"))
-        XCTAssertEqual(GraphQL.FragmentDefinition(name: "named", typeCondition: "typename", directives: [], selectionSet: "{}"),
+        XCTAssertEqual(.init(name: "named", typeCondition: .init(namedType: "typename"), directives: [], selectionSet: []),
                        testSubject("fragment named on typename{}"))
-        XCTAssertEqual(GraphQL.FragmentDefinition(name: "named", typeCondition: "typename", directives: ["@annotation[]"], selectionSet: "{}"),
+        XCTAssertEqual(.init(name: "named", typeCondition: .init(namedType: "typename"), directives: ["@annotation[]"], selectionSet: []),
                        testSubject("fragment named on typename @annotation {}"))
-        XCTAssertEqual(GraphQL.FragmentDefinition(name: "named", typeCondition: "typename", directives: ["@annotation[]"], selectionSet: "{}"),
+        XCTAssertEqual(.init(name: "named", typeCondition: .init(namedType: "typename"), directives: ["@annotation[]"], selectionSet: []),
                        testSubject("fragment named on typename@annotation{}"))
         // XCTAssertNil(testSubject("fragmentnamed on typename{}")) // FIXME: Fix this neatly
         XCTAssertNil(testSubject("fragment namedon typename{}"))
@@ -398,14 +412,14 @@ final class GraphQLTests: XCTestCase {
     }
 
     func testInlineFragment() {
-        func testSubject(_ str: String) -> String? {
+        func testSubject(_ str: String) -> GraphQL.InlineFragment? {
             graphQlparser.inlineFragment.parse(str).match
         }
 
-        XCTAssertEqual("{}", testSubject("...{}"))
-        XCTAssertEqual("named{}", testSubject("...on named{}"))
-        XCTAssertEqual("@annotated[]{}", testSubject("...@annotated{}"))
-        XCTAssertEqual("named@annotated[]{}", testSubject("... on named @annotated { }"))
+        XCTAssertEqual(GraphQL.InlineFragment(typeCondition: nil, directives: [], selectionSet: []), testSubject("...{}"))
+        XCTAssertEqual(GraphQL.InlineFragment(typeCondition: .init(namedType: "named"), directives: [], selectionSet: []), testSubject("...on named{}"))
+        XCTAssertEqual(GraphQL.InlineFragment(typeCondition: nil, directives: ["@annotated[]"], selectionSet: []), testSubject("...@annotated{}"))
+        XCTAssertEqual(GraphQL.InlineFragment(typeCondition: .init(namedType: "named"), directives: ["@annotated[]"], selectionSet: []), testSubject("... on named @annotated { }"))
     }
 
     func testOperationType() {
@@ -426,22 +440,22 @@ final class GraphQLTests: XCTestCase {
             graphQlparser.operationDefinition.parse(str).match
         }
 
-        XCTAssertEqual(.selectionSet(selectionSet: "{}"), testSubject("{}"))
-        XCTAssertEqual(.operation(definition: GraphQL.OperationDefinition.Operation(operationType: .query, name: nil, variableDefinitions: [], directives: [], selectionSet: nil)),
+        XCTAssertEqual(.selectionSet(selectionSet: []), testSubject("{}"))
+        XCTAssertEqual(.operation(definition: GraphQL.OperationDefinition.Operation(operationType: .query, name: nil, variableDefinitions: [], directives: [], selectionSet: [])),
                        testSubject("query"))
-        XCTAssertEqual(.operation(definition: GraphQL.OperationDefinition.Operation(operationType: .query, name: "named", variableDefinitions: [], directives: [], selectionSet: nil)),
+        XCTAssertEqual(.operation(definition: GraphQL.OperationDefinition.Operation(operationType: .query, name: "named", variableDefinitions: [], directives: [], selectionSet: [])),
                        testSubject("query named"))
-        XCTAssertEqual(.operation(definition: GraphQL.OperationDefinition.Operation(operationType: .query, name: nil, variableDefinitions: ["abc:Int", "xyz:Int"], directives: [], selectionSet: nil)),
+        XCTAssertEqual(.operation(definition: GraphQL.OperationDefinition.Operation(operationType: .query, name: nil, variableDefinitions: ["abc:Int", "xyz:Int"], directives: [], selectionSet: [])),
                        testSubject("query ($abc:Int, $xyz:Int)"))
-        XCTAssertEqual(.operation(definition: GraphQL.OperationDefinition.Operation(operationType: .query, name: nil, variableDefinitions: [], directives: ["@annotated[]", "@with[]"], selectionSet: nil)),
+        XCTAssertEqual(.operation(definition: GraphQL.OperationDefinition.Operation(operationType: .query, name: nil, variableDefinitions: [], directives: ["@annotated[]", "@with[]"], selectionSet: [])),
                        testSubject("query @annotated @with"))
-        XCTAssertEqual(.operation(definition: GraphQL.OperationDefinition.Operation(operationType: .query, name: nil, variableDefinitions: [], directives: [], selectionSet: "{}")),
+        XCTAssertEqual(.operation(definition: GraphQL.OperationDefinition.Operation(operationType: .query, name: nil, variableDefinitions: [], directives: [], selectionSet: [])),
                        testSubject("query {}"))
-        XCTAssertEqual(.operation(definition: GraphQL.OperationDefinition.Operation(operationType: .query, name: "named", variableDefinitions: ["abc:Int"], directives: ["@annotated[]"], selectionSet: "{}")),
+        XCTAssertEqual(.operation(definition: GraphQL.OperationDefinition.Operation(operationType: .query, name: "named", variableDefinitions: ["abc:Int"], directives: ["@annotated[]"], selectionSet: [])),
                        testSubject("query named ($abc: Int) @annotated {}"))
-        XCTAssertEqual(.operation(definition: GraphQL.OperationDefinition.Operation(operationType: .mutation, name: "named", variableDefinitions: ["abc:Int"], directives: ["@annotated[]"], selectionSet: "{}")),
+        XCTAssertEqual(.operation(definition: GraphQL.OperationDefinition.Operation(operationType: .mutation, name: "named", variableDefinitions: ["abc:Int"], directives: ["@annotated[]"], selectionSet: [])),
                        testSubject("mutation named ($abc: Int) @annotated {}"))
-        XCTAssertEqual(.operation(definition: GraphQL.OperationDefinition.Operation(operationType: .subscription, name: "named", variableDefinitions: ["abc:Int"], directives: ["@annotated[]"], selectionSet: "{}")),
+        XCTAssertEqual(.operation(definition: GraphQL.OperationDefinition.Operation(operationType: .subscription, name: "named", variableDefinitions: ["abc:Int"], directives: ["@annotated[]"], selectionSet: [])),
                        testSubject("subscription named ($abc: Int) @annotated {}"))
         XCTAssertNil(testSubject("invalid named ($abc: Int) @annotated {}"))
     }
@@ -451,11 +465,11 @@ final class GraphQLTests: XCTestCase {
             graphQlparser.executableDefinition.parse(str).match
         }
 
-        XCTAssertEqual(.operation(definition: .selectionSet(selectionSet: "{}")),
+        XCTAssertEqual(.operation(definition: .selectionSet(selectionSet: [])),
                        testSubject("{}"))
-        XCTAssertEqual(.operation(definition: .operation(definition: GraphQL.OperationDefinition.Operation(operationType: .query, name: "named", variableDefinitions: ["abc:Int"], directives: ["@annotated[]"], selectionSet: "{}"))),
+        XCTAssertEqual(.operation(definition: .operation(definition: GraphQL.OperationDefinition.Operation(operationType: .query, name: "named", variableDefinitions: ["abc:Int"], directives: ["@annotated[]"], selectionSet: []))),
                        testSubject("query named ($abc: Int) @annotated {}"))
-        XCTAssertEqual(.fragment(definition: GraphQL.FragmentDefinition(name: "named", typeCondition: "typename", directives: ["@annotation[]"], selectionSet: "{}")),
+        XCTAssertEqual(.fragment(definition: GraphQL.FragmentDefinition(name: "named", typeCondition: .init(namedType: "typename"), directives: ["@annotation[]"], selectionSet: [])),
                        testSubject("fragment named on typename @annotation {}"))
     }
 
@@ -467,9 +481,9 @@ final class GraphQLTests: XCTestCase {
         XCTAssertEqual(
             GraphQL.Document(definitions: [
                 .executable(definition: .operation(definition: GraphQL.OperationDefinition.operation(
-                    definition: GraphQL.OperationDefinition.Operation(operationType: .query, name: "named", variableDefinitions: ["abc:Int"], directives: ["@annotated[]"], selectionSet: "{}")))),
+                    definition: GraphQL.OperationDefinition.Operation(operationType: .query, name: "named", variableDefinitions: ["abc:Int"], directives: ["@annotated[]"], selectionSet: [])))),
                 .executable(definition: .fragment(
-                    definition: GraphQL.FragmentDefinition(name: "named", typeCondition: "typename", directives: ["@annotation[]"], selectionSet: "{}")))
+                    definition: GraphQL.FragmentDefinition(name: "named", typeCondition: .init(namedType: "typename"), directives: ["@annotation[]"], selectionSet: [])))
             ]),
             testSubject("query named ($abc: Int) @annotated {} \n fragment named on typename @annotation {}")
         )

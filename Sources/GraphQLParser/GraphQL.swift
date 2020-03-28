@@ -404,7 +404,7 @@ class GraphQL {
 
         // MARK: Selection sets
 
-        var selectionDeferred: Parser<String> = .never
+        var selectionDeferred: Parser<GraphQL.Selection> = .never
         // selection -> [ field fragmentSpread inlineFragment ]
         let selection = deferred { selectionDeferred }
         self.selection = selection
@@ -416,7 +416,7 @@ class GraphQL {
             zeroOrMore(selection, separatedBy: tokenSeparator),
             tokenSeparator,
             literal("}")
-        ).map { _, _, selections, _, _ in "{\(selections.joined(separator: ","))}" }
+        ).map { _, _, selections, _, _ in selections }
         self.selectionSet = selectionSet
 
         // alias -> " name ':' "
@@ -438,17 +438,12 @@ class GraphQL {
             maybe(directives),
             tokenSeparator,
             maybe(selectionSet)
-        ).map { (arg) -> String in
-            let (alias, _, name, _, arguments, _, directives, _, selectionSet) = arg
-            var argumentsString = ""
-            if let arguments = arguments.wrappedValue {
-                argumentsString = arguments.joined(separator: ",")
-            }
-            var directivesString = ""
-            if let directives = directives.wrappedValue {
-                directivesString = directives.joined(separator: ",")
-            }
-            return "\(alias.wrappedValue ?? ""):\(name)(\(argumentsString))\(directivesString)\(selectionSet.wrappedValue ?? "")"
+        ).map { alias, _, name, _, arguments, _, directives, _, selectionSet in
+            Field(alias: alias.wrappedValue,
+                  name: name,
+                  arguments: arguments.wrappedValue ?? [],
+                  directives: directives.wrappedValue ?? [],
+                  selectionSet: selectionSet.wrappedValue ?? [])
         }
         self.field = field
 
@@ -469,13 +464,8 @@ class GraphQL {
             fragmentName,
             tokenSeparator,
             maybe(directives)
-        ).map { (arg) -> String in
-            let (_, _, fragmentName, _, directives) = arg
-            var directivesString = ""
-            if let directives = directives.wrappedValue {
-                directivesString = directives.joined(separator: ",")
-            }
-            return "\(fragmentName)\(directivesString)"
+        ).map { _, _, fragmentName, _, directives in
+            FragmentSpread(name: fragmentName, directives: directives.wrappedValue ?? [])
         }
         self.fragmentSpread = fragmentSpread
 
@@ -484,7 +474,7 @@ class GraphQL {
             literal("on"),
             tokenSeparator,
             namedType
-        ).map { _, _, namedType in namedType }
+        ).map { _, _, namedType in TypeCondition(namedType: namedType) }
         self.typeCondition = typeCondition
 
         // fragmentDefinition -> " 'fragment' fragmentName typeCondition directives? selectionSet "
@@ -499,7 +489,10 @@ class GraphQL {
             tokenSeparator,
             selectionSet
         ).map { _, _, fragmentName, _, typeCondition, _, directives, _, selectionSet in
-            FragmentDefinition(name: fragmentName, typeCondition: typeCondition, directives: directives.wrappedValue ?? [], selectionSet: selectionSet)
+            FragmentDefinition(name: fragmentName,
+                               typeCondition: typeCondition,
+                               directives: directives.wrappedValue ?? [],
+                               selectionSet: selectionSet)
         }
         self.fragmentDefinition = fragmentDefinition
 
@@ -512,13 +505,8 @@ class GraphQL {
             maybe(directives),
             tokenSeparator,
             selectionSet
-        ).map { (arg) -> String in
-            let (_, _, typeCondition, _, directives, _, selectionSet) = arg
-            var directivesString = ""
-            if let directives = directives.wrappedValue {
-                directivesString = directives.joined(separator: ",")
-            }
-            return "\(typeCondition.wrappedValue ?? "")\(directivesString)\(selectionSet)"
+        ).map { _, _, typeCondition, _, directives, _, selectionSet in
+            InlineFragment(typeCondition: typeCondition.wrappedValue, directives: directives.wrappedValue ?? [], selectionSet: selectionSet)
         }
         self.inlineFragment = inlineFragment
 
@@ -546,7 +534,12 @@ class GraphQL {
                 tokenSeparator,
                 maybe(selectionSet)
             ).map { operationType, _, name, _, variableDefinitions, _, directives, _, selectionSet in
-                OperationDefinition.operation(definition: OperationDefinition.Operation(operationType: operationType, name: name.wrappedValue, variableDefinitions: variableDefinitions.wrappedValue ?? [], directives: directives.wrappedValue ?? [], selectionSet: selectionSet.wrappedValue))
+                OperationDefinition.operation(definition: OperationDefinition.Operation(
+                    operationType: operationType,
+                    name: name.wrappedValue,
+                    variableDefinitions: variableDefinitions.wrappedValue ?? [],
+                    directives: directives.wrappedValue ?? [],
+                    selectionSet: selectionSet.wrappedValue ?? []))
             },
             selectionSet.map(OperationDefinition.selectionSet),
         ])
@@ -569,7 +562,7 @@ class GraphQL {
 
         // document -> { definition }
         let document = oneOrMore(definition, separatedBy: tokenSeparator)
-            .map { Document(definitions: $0) }
+            .map(Document.init)
         self.document = document
 
         /// Real parsing behaviour for deferred parsers is defined here.
@@ -593,9 +586,9 @@ class GraphQL {
         ])
 
         selectionDeferred = oneOf([
-            field,
-            fragmentSpread,
-            inlineFragment,
+            field.map(Selection.field),
+            fragmentSpread.map(Selection.fragmentSpread),
+            inlineFragment.map(Selection.inlineFragment),
         ])
     }
 
@@ -640,15 +633,15 @@ class GraphQL {
     let arguments: Parser<[String]>
     let directive: Parser<String>
     let directives: Parser<[String]>
-    let selection: Parser<String>
-    let selectionSet: Parser<String>
+    let selection: Parser<Selection>
+    let selectionSet: Parser<[Selection]>
     let alias: Parser<String>
-    let field: Parser<String>
+    let field: Parser<Field>
     let fragmentName: Parser<String>
-    let fragmentSpread: Parser<String>
-    let typeCondition: Parser<String>
+    let fragmentSpread: Parser<FragmentSpread>
+    let typeCondition: Parser<TypeCondition>
     let fragmentDefinition: Parser<FragmentDefinition>
-    let inlineFragment: Parser<String>
+    let inlineFragment: Parser<InlineFragment>
     let operationType: Parser<OperationType>
     let operationDefinition: Parser<OperationDefinition>
     let executableDefinition: Parser<ExecutableDefinition>
