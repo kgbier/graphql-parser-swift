@@ -264,13 +264,13 @@ final class GraphQLTests: XCTestCase {
     }
 
     func testVariableDefinition() {
-        func testSubject(_ str: String) -> String? {
+        func testSubject(_ str: String) -> GraphQL.VariableDefinition? {
             graphQlparser.variableDefinition.parse(str).match
         }
 
-        XCTAssertEqual("abc:Int", testSubject("$abc : Int"))
-        XCTAssertEqual("abc:Int=123", testSubject("$abc : Int = 123"))
-        XCTAssertEqual("abc:Int=123", testSubject("$abc:Int=123"))
+        XCTAssertEqual(.init(variable: "abc", type: "Int", defaultValue: nil), testSubject("$abc : Int"))
+        XCTAssertEqual(.init(variable: "abc", type: "Int", defaultValue: "123"), testSubject("$abc : Int = 123"))
+        XCTAssertEqual(.init(variable: "abc", type: "Int", defaultValue: "123"), testSubject("$abc:Int=123"))
     }
 
     func testArgument() {
@@ -450,17 +450,17 @@ final class GraphQLTests: XCTestCase {
                        testSubject("query"))
         XCTAssertEqual(.operation(definition: .init(operationType: .query, name: "named", variableDefinitions: [], directives: [], selectionSet: [])),
                        testSubject("query named"))
-        XCTAssertEqual(.operation(definition: .init(operationType: .query, name: nil, variableDefinitions: ["abc:Int", "xyz:Int"], directives: [], selectionSet: [])),
+        XCTAssertEqual(.operation(definition: .init(operationType: .query, name: nil, variableDefinitions: [.init(variable: "abc", type: "Int", defaultValue: nil), .init(variable: "xyz", type: "Int", defaultValue: nil)], directives: [], selectionSet: [])),
                        testSubject("query ($abc:Int, $xyz:Int)"))
         XCTAssertEqual(.operation(definition: .init(operationType: .query, name: nil, variableDefinitions: [], directives: [.init(name: "annotated", arguments: []), .init(name: "with", arguments: [])], selectionSet: [])),
                        testSubject("query @annotated @with"))
         XCTAssertEqual(.operation(definition: .init(operationType: .query, name: nil, variableDefinitions: [], directives: [], selectionSet: [])),
                        testSubject("query {}"))
-        XCTAssertEqual(.operation(definition: .init(operationType: .query, name: "named", variableDefinitions: ["abc:Int"], directives: [.init(name: "annotated", arguments: [])], selectionSet: [])),
+        XCTAssertEqual(.operation(definition: .init(operationType: .query, name: "named", variableDefinitions: [.init(variable: "abc", type: "Int", defaultValue: nil)], directives: [.init(name: "annotated", arguments: [])], selectionSet: [])),
                        testSubject("query named ($abc: Int) @annotated {}"))
-        XCTAssertEqual(.operation(definition: .init(operationType: .mutation, name: "named", variableDefinitions: ["abc:Int"], directives: [.init(name: "annotated", arguments: [])], selectionSet: [])),
+        XCTAssertEqual(.operation(definition: .init(operationType: .mutation, name: "named", variableDefinitions: [.init(variable: "abc", type: "Int", defaultValue: nil)], directives: [.init(name: "annotated", arguments: [])], selectionSet: [])),
                        testSubject("mutation named ($abc: Int) @annotated {}"))
-        XCTAssertEqual(.operation(definition: .init(operationType: .subscription, name: "named", variableDefinitions: ["abc:Int"], directives: [.init(name: "annotated", arguments: [])], selectionSet: [])),
+        XCTAssertEqual(.operation(definition: .init(operationType: .subscription, name: "named", variableDefinitions: [.init(variable: "abc", type: "Int", defaultValue: nil)], directives: [.init(name: "annotated", arguments: [])], selectionSet: [])),
                        testSubject("subscription named ($abc: Int) @annotated {}"))
         XCTAssertNil(testSubject("invalid named ($abc: Int) @annotated {}"))
     }
@@ -472,7 +472,7 @@ final class GraphQLTests: XCTestCase {
 
         XCTAssertEqual(.operation(definition: .selectionSet(selectionSet: [])),
                        testSubject("{}"))
-        XCTAssertEqual(.operation(definition: .operation(definition: .init(operationType: .query, name: "named", variableDefinitions: ["abc:Int"], directives: [.init(name: "annotated", arguments: [])], selectionSet: []))),
+        XCTAssertEqual(.operation(definition: .operation(definition: .init(operationType: .query, name: "named", variableDefinitions: [.init(variable: "abc", type: "Int", defaultValue: nil)], directives: [.init(name: "annotated", arguments: [])], selectionSet: []))),
                        testSubject("query named ($abc: Int) @annotated {}"))
         XCTAssertEqual(.fragment(definition: .init(name: "named", typeCondition: .init(namedType: "typename"), directives: [.init(name: "annotated", arguments: [])], selectionSet: [])),
                        testSubject("fragment named on typename @annotated {}"))
@@ -486,7 +486,7 @@ final class GraphQLTests: XCTestCase {
         XCTAssertEqual(
             .init(definitions: [
                 .executable(definition: .operation(definition: .operation(
-                    definition: .init(operationType: .query, name: "named", variableDefinitions: ["abc:Int"], directives: [.init(name: "annotated", arguments: [])], selectionSet: [])))),
+                    definition: .init(operationType: .query, name: "named", variableDefinitions: [.init(variable: "abc", type: "Int", defaultValue: nil)], directives: [.init(name: "annotated", arguments: [])], selectionSet: [])))),
                 .executable(definition: .fragment(
                     definition: .init(name: "named", typeCondition: .init(namedType: "typename"), directives: [.init(name: "annotated", arguments: [])], selectionSet: [])))
             ]),

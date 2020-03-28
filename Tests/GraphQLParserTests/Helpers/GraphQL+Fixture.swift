@@ -13,3 +13,4 @@ extension GraphQL.Field : DumpEquatable {}
 extension GraphQL.Selection : DumpEquatable {}
 extension GraphQL.Directive : DumpEquatable {}
 extension GraphQL.Argument : DumpEquatable {}
+extension GraphQL.VariableDefinition : DumpEquatable {}

@@ -19,7 +19,7 @@ extension GraphQL {
         struct Operation {
             let operationType: OperationType
             let name: String?
-            let variableDefinitions: [String]
+            let variableDefinitions: [VariableDefinition]
             let directives: [Directive]
             let selectionSet: [Selection]
         }
@@ -75,5 +75,11 @@ extension GraphQL {
     struct Argument {
         let name: String
         let value: String
+    }
+
+    struct VariableDefinition {
+        let variable: String
+        let type: String
+        let defaultValue: String?
     }
 }

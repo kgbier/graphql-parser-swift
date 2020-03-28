@@ -340,13 +340,8 @@ class GraphQL {
             type,
             tokenSeparator,
             maybe(defaultValue)
-        ).map { (arg) -> String in
-            let (variable, _, _, _, type, _, defaultValue) = arg
-            if let defaultValue = defaultValue.wrappedValue {
-                return "\(variable):\(type)=\(defaultValue)"
-            } else {
-                return "\(variable):\(type)"
-            }
+        ).map { variable, _, _, _, type, _, defaultValue in
+            VariableDefinition(variable: variable, type: type, defaultValue: defaultValue.wrappedValue)
         }
         self.variableDefinition = variableDefinition
 
@@ -626,8 +621,8 @@ class GraphQL {
     let nonNullType: Parser<String>
     let defaultValue: Parser<String>
     let variable: Parser<String>
-    let variableDefinition: Parser<String>
-    let variableDefinitions: Parser<[String]>
+    let variableDefinition: Parser<VariableDefinition>
+    let variableDefinitions: Parser<[VariableDefinition]>
     let argument: Parser<Argument>
     let arguments: Parser<[Argument]>
     let directive: Parser<Directive>
