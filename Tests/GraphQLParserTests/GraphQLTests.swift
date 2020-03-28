@@ -432,6 +432,23 @@ final class GraphQLTests: XCTestCase {
         XCTAssertNil(testSubject("invalid named ($abc: Int) @annotated {}"))
     }
 
+    func testExecutableDefinition() {
+        func testSubject(_ str: String) -> String? {
+            graphQlparser.executableDefinition.parse(str).match
+        }
+
+        XCTAssertEqual("query>named$(abc:Int)@annotated[]{}", testSubject("query named ($abc: Int) @annotated {}"))
+        XCTAssertEqual("named:typename@annotation[]{}", testSubject("fragment named on typename @annotation {}"))
+    }
+
+    func testDocument() {
+        func testSubject(_ str: String) -> [String]? {
+            graphQlparser.document.parse(str).match
+        }
+
+        XCTAssertEqual(["query>named$(abc:Int)@annotated[]{}", "named:typename@annotation[]{}"], testSubject("query named ($abc: Int) @annotated {} \n fragment named on typename @annotation {}"))
+    }
+
     //    func testSandbox() {
     //        dump(graphQlparser.selectionSet.parse("{ hello, world }"))
     //    }
