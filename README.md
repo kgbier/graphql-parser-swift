@@ -3,13 +3,12 @@
 
 ![Swift](https://github.com/kgbier/graphql-parser-swift/workflows/Swift/badge.svg)
 
-A utility for parsing GraphQL queries. Written with help from the excellent resource 
+A utility for parsing GraphQL queries. Written with help from the excellent 
 [Point·Free](https://www.pointfree.co/collections/parsing).
 
 Current functionality is limited to understanding a GraphQL Query as detailed in the
-official [spec](https://spec.graphql.org/June2018/), and producing simple domain specific strings.
+official [spec](https://spec.graphql.org/June2018/), and producing an AST (abstract syntax tree).
 
 ### Limitations:
-- [WIP] Does not parse into an AST (abstract syntax tree)
 - Does not support Unicode literals
 - Does not support block strings
