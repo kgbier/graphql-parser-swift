@@ -500,10 +500,20 @@ class GraphQL {
         // inlineFragment -> " '...' typeCondition? directives? selectionSet "
         let inlineFragment = zip(
             literal("..."),
+            tokenSeparator,
             maybe(typeCondition),
+            tokenSeparator,
             maybe(directives),
+            tokenSeparator,
             selectionSet
-        ).map { _, typeCondition, directives, selectionSet in "..." }
+        ).map { (arg) -> String in
+            let (_, _, typeCondition, _, directives, _, selectionSet) = arg
+            var directivesString = ""
+            if let directives = directives.wrappedValue {
+                directivesString = directives.joined(separator: ",")
+            }
+            return "\(typeCondition.wrappedValue ?? "")\(directivesString)\(selectionSet)"
+        }
         self.inlineFragment = inlineFragment
 
 

@@ -377,6 +377,17 @@ final class GraphQLTests: XCTestCase {
         // XCTAssertNil(testSubject("onnamed")) // TODO: Fix this neatly
     }
 
+    func testInlineFragment() {
+        func testSubject(_ str: String) -> String? {
+            graphQlparser.inlineFragment.parse(str).match
+        }
+
+        XCTAssertEqual("{}", testSubject("...{}"))
+        XCTAssertEqual("named{}", testSubject("...on named{}"))
+        XCTAssertEqual("@annotated[]{}", testSubject("...@annotated{}"))
+        XCTAssertEqual("named@annotated[]{}", testSubject("... on named @annotated { }"))
+    }
+
     //    func testSandbox() {
     //        dump(graphQlparser.selectionSet.parse("{ hello, world }"))
     //    }
