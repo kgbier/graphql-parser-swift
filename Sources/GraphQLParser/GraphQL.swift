@@ -272,11 +272,11 @@ class GraphQL {
             zip(literal("{"),
                 tokenSeparator,
                 literal("}")
-            ).map { _ in Array<String>() }
+            ).map { _ in [] }
                 .map { _ in "{}" },
             zip(literal("{"),
                 tokenSeparator,
-                zeroOrMore(objectField, separatedBy: tokenSeparator),
+                oneOrMore(objectField, separatedBy: tokenSeparator),
                 tokenSeparator,
                 literal("}")
             ).map { _, _, fields, _, _ in fields }
@@ -321,12 +321,14 @@ class GraphQL {
             char(of: "="),
             tokenSeparator,
             value
-        ).map{ _, _, v in v}
+        ).map{ _, _, value in value}
         self.defaultValue = defaultValue
 
         // variable -> " '$' name "
-        let variable = zip(literal("$"), name)
-            .map{ _, n in n }
+        let variable = zip(
+            literal("$"),
+            name
+        ).map{ _, name in name }
         self.variable = variable
 
         // variableDefinition -> " variable ':' type defaultValue? "
@@ -339,9 +341,9 @@ class GraphQL {
             tokenSeparator,
             maybe(defaultValue)
         ).map { (arg) -> String in
-            let (variable, _, _, _, type, _, defValue) = arg
-            if let defValue = defValue.wrappedValue {
-                return "\(variable):\(type)=\(defValue)"
+            let (variable, _, _, _, type, _, defaultValue) = arg
+            if let defaultValue = defaultValue.wrappedValue {
+                return "\(variable):\(type)=\(defaultValue)"
             } else {
                 return "\(variable):\(type)"
             }
@@ -424,7 +426,7 @@ class GraphQL {
             name,
             tokenSeparator,
             literal(":")
-        ).map { n, _, _ in n}
+        ).map { name, _, _ in name}
         self.alias = alias
 
         // field -> " alias? name arguments? directives? selectionSet? "
