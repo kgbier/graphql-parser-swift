@@ -119,3 +119,32 @@ func zip<A, B, C, D, E, F, G>(
     return zip(a, zip(b, c, d, e, f, g))
         .map { a, bcdefg in (a, bcdefg.0, bcdefg.1, bcdefg.2, bcdefg.3, bcdefg.4, bcdefg.5) }
 }
+
+func zip<A, B, C, D, E, F, G, H>(
+    _ a: Parser<A>,
+    _ b: Parser<B>,
+    _ c: Parser<C>,
+    _ d: Parser<D>,
+    _ e: Parser<E>,
+    _ f: Parser<F>,
+    _ g: Parser<G>,
+    _ h: Parser<H>
+) -> Parser<(A, B, C, D, E, F, G, H)> {
+    return zip(a, zip(b, c, d, e, f, g, h))
+        .map { a, bcdefgh in (a, bcdefgh.0, bcdefgh.1, bcdefgh.2, bcdefgh.3, bcdefgh.4, bcdefgh.5, bcdefgh.6) }
+}
+
+func zip<A, B, C, D, E, F, G, H, I>(
+    _ a: Parser<A>,
+    _ b: Parser<B>,
+    _ c: Parser<C>,
+    _ d: Parser<D>,
+    _ e: Parser<E>,
+    _ f: Parser<F>,
+    _ g: Parser<G>,
+    _ h: Parser<H>,
+    _ i: Parser<I>
+) -> Parser<(A, B, C, D, E, F, G, H, I)> {
+    return zip(a, zip(b, c, d, e, f, g, h, i))
+        .map { a, bcdefghi in (a, bcdefghi.0, bcdefghi.1, bcdefghi.2, bcdefghi.3, bcdefghi.4, bcdefghi.5, bcdefghi.6, bcdefghi.7) }
+}

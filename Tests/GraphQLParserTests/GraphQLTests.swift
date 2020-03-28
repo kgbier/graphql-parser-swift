@@ -283,33 +283,66 @@ final class GraphQLTests: XCTestCase {
     }
 
     func testArguments() {
-        func testSubject(_ str: String) -> String? {
+        func testSubject(_ str: String) -> [String]? {
             graphQlparser.arguments.parse(str).match
         }
-
-        XCTAssertEqual("[abc:xyz]", testSubject("(abc : \"xyz\")"))
-        XCTAssertEqual("[abc:123]", testSubject("(abc : 123)"))
-        XCTAssertEqual("[abc:123]", testSubject("(abc:123)"))
-        XCTAssertEqual("[abc:123,def:xyz]", testSubject("(abc : 123, def : \"xyz\")"))
+        
+        XCTAssertEqual(["abc:xyz"], testSubject("(abc:\"xyz\")"))
+        XCTAssertEqual(["abc:123"], testSubject("(abc:123)"))
+        XCTAssertEqual(["abc:123"], testSubject("( abc : 123 )"))
+        XCTAssertEqual(["abc:123","def:xyz"], testSubject("(abc : 123, def : \"xyz\")"))
     }
-
+    
     func testDirective() {
         func testSubject(_ str: String) -> String? {
             graphQlparser.directive.parse(str).match
         }
-
-        XCTAssertEqual("@named:[abc:xyz]", testSubject("@named (abc : \"xyz\")"))
-        XCTAssertEqual("@named:[abc:xyz]", testSubject("@named(abc : \"xyz\")"))
+        
+        XCTAssertEqual("@named[abc:xyz]", testSubject("@named (abc : \"xyz\")"))
+        XCTAssertEqual("@named[abc:xyz]", testSubject("@named(abc : \"xyz\")"))
     }
-
+    
     func testDirectives() {
         func testSubject(_ str: String) -> [String]? {
             graphQlparser.directives.parse(str).match
         }
-
-        XCTAssertEqual(["@named:[abc:xyz]", "@other:[abc:xyz]"], testSubject("@named (abc : \"xyz\") @other (abc : \"xyz\")"))
+        
+        XCTAssertEqual(["@named[abc:xyz]", "@other[abc:xyz]"], testSubject("@named (abc : \"xyz\") @other (abc : \"xyz\")"))
     }
-
+    
+    func testSelection() {
+        func testSubject(_ str: String) -> String? {
+            graphQlparser.selectionSet.parse(str).match
+        }
+        
+        XCTAssertEqual("{:abc(),:def(),:xyz()}", testSubject("{abc def,xyz}"))
+        XCTAssertEqual("{:abc(),:def(),:xyz()}", testSubject("{ abc def,xyz }"))
+    }
+    
+    func testAlias() {
+        func testSubject(_ str: String) -> String? {
+            graphQlparser.alias.parse(str).match
+        }
+        
+        XCTAssertEqual("abc", testSubject("abc:"))
+        XCTAssertEqual("abc", testSubject("abc :"))
+        XCTAssertNil(testSubject("abc"))
+        XCTAssertNil(testSubject("123"))
+    }
+    
+    func testField() {
+        func testSubject(_ str: String) -> String? {
+            graphQlparser.field.parse(str).match
+        }
+        
+        XCTAssertEqual(":named()", testSubject("named"))
+        XCTAssertEqual("aliased:named()", testSubject("aliased:named"))
+        XCTAssertEqual(":named()@annotated[]", testSubject("named@annotated"))
+        XCTAssertEqual(":named()@annotated[with:123]", testSubject("named@annotated(with:123)"))
+        XCTAssertEqual("alias:named(with:123)@annotated[with:456]{:also()}", testSubject("alias:named(with:123)@annotated(with:456){ also }"))
+        XCTAssertEqual("alias:named(with:123)@annotated[with:456]{:also()}", testSubject("alias : named ( with : 123 ) @annotated ( with: 456 ) { also }"))
+    }
+    
     //    func testSandbox() {
     //        dump(graphQlparser.selectionSet.parse("{ hello, world }"))
     //    }

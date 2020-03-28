@@ -376,9 +376,9 @@ class GraphQL {
             literal("("),
             tokenSeparator,
             zeroOrMore(argument, separatedBy: tokenSeparator),
+            tokenSeparator,
             literal(")")
-        ).map { _, _, arguments, _ in arguments }
-            .map { "[\($0.joined(separator: ","))]"}
+        ).map { _, _, arguments, _, _ in arguments }
         self.arguments = arguments
 
         // directive -> " '@' name arguments? "
@@ -390,9 +390,9 @@ class GraphQL {
         ).map { (arg) -> String in
             let (_, name, _, arguments) = arg
             if let arguments = arguments.wrappedValue {
-                return "@\(name):\(arguments)"
+                return "@\(name)[\(arguments.joined(separator: ","))]"
             } else {
-                return "@\(name)"
+                return "@\(name)[]"
             }
         }
         self.directive = directive
@@ -430,11 +430,26 @@ class GraphQL {
         // field -> " alias? name arguments? directives? selectionSet? "
         let field = zip(
             maybe(alias),
+            tokenSeparator,
             name,
+            tokenSeparator,
             maybe(arguments),
-            maybe(directive),
+            tokenSeparator,
+            maybe(directives),
+            tokenSeparator,
             maybe(selectionSet)
-        ).map { alias, name, arguments, directive, selectionSet in name }
+        ).map { (arg) -> String in
+            let (alias, _, name, _, arguments, _, directives, _, selectionSet) = arg
+            var argumentsString = ""
+            if let arguments = arguments.wrappedValue {
+                argumentsString = arguments.joined(separator: ",")
+            }
+            var directivesString = ""
+            if let directives = directives.wrappedValue {
+                directivesString = directives.joined(separator: ",")
+            }
+            return "\(alias.wrappedValue ?? ""):\(name)(\(argumentsString))\(directivesString)\(selectionSet.wrappedValue ?? "")"
+        }
         self.field = field
 
 
@@ -588,7 +603,7 @@ class GraphQL {
     let variableDefinition: Parser<String>
     let variableDefinitions: Parser<[String]>
     let argument: Parser<String>
-    let arguments: Parser<String>
+    let arguments: Parser<[String]>
     let directive: Parser<String>
     let directives: Parser<[String]>
     let selection: Parser<String>
