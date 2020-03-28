@@ -11,9 +11,10 @@ final class GraphQLTests: XCTestCase {
         }
 
         XCTAssertEqual("abc", testSubject("abc"))
+        XCTAssertEqual("abc", testSubject("abc"))
         XCTAssertEqual("a123", testSubject("a123"))
         XCTAssertEqual("with_underscore_", testSubject("with_underscore_"))
-        XCTAssertNil(testSubject("_abc"))
+        XCTAssertEqual("__typename", testSubject("__typename"))
         XCTAssertNil(testSubject("123"))
     }
 

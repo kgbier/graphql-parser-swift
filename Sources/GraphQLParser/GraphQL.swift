@@ -12,7 +12,7 @@ class GraphQL {
 
         // name -> '[_A-Za-z][_0-9A-Za-z]'
         let name = prefix(while: { $0.isLetter || $0.isNumber || $0 == "_" })
-            .flatMap { (!$0.isEmpty && !$0.first!.isNumber && $0.first != "_") ? always($0) : .never}
+            .flatMap { (!$0.isEmpty && !$0.first!.isNumber) ? always($0) : .never}
             .map(String.init)
         self.name = name
 
