@@ -20,7 +20,7 @@ extension GraphQL {
             let operationType: OperationType
             let name: String?
             let variableDefinitions: [String]
-            let directives: [String]
+            let directives: [Directive]
             let selectionSet: [Selection]
         }
     }
@@ -28,19 +28,19 @@ extension GraphQL {
     struct FragmentDefinition {
         let name: String
         let typeCondition: TypeCondition
-        let directives: [String]
+        let directives: [Directive]
         let selectionSet: [Selection]
     }
 
     struct InlineFragment {
         let typeCondition: TypeCondition?
-        let directives: [String]
+        let directives: [Directive]
         let selectionSet: [Selection]
     }
 
     struct FragmentSpread {
         let name: String
-        let directives: [String]
+        let directives: [Directive]
     }
 
     enum OperationType {
@@ -56,8 +56,8 @@ extension GraphQL {
     struct Field {
         let alias: String?
         let name: String
-        let arguments: [String]
-        let directives: [String]
+        let arguments: [Argument]
+        let directives: [Directive]
         let selectionSet: [Selection]
     }
 
@@ -65,5 +65,15 @@ extension GraphQL {
         case field(selection: Field)
         case fragmentSpread(selection: FragmentSpread)
         case inlineFragment(selection: InlineFragment)
+    }
+
+    struct Directive {
+        let name: String
+        let arguments: [Argument]
+    }
+
+    struct Argument {
+        let name: String
+        let value: String
     }
 }

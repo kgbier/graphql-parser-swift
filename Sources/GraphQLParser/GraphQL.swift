@@ -370,7 +370,9 @@ class GraphQL {
             literal(":"),
             tokenSeparator,
             value
-        ).map { name, _, _, _, value in "\(name):\(value)" }
+        ).map { name, _, _, _, value in
+            Argument(name: name, value: value)
+        }
         self.argument = argument
 
         // arguments -> " '(' { argument } ')' "
@@ -389,13 +391,8 @@ class GraphQL {
             name,
             tokenSeparator,
             maybe(arguments)
-        ).map { (arg) -> String in
-            let (_, name, _, arguments) = arg
-            if let arguments = arguments.wrappedValue {
-                return "@\(name)[\(arguments.joined(separator: ","))]"
-            } else {
-                return "@\(name)[]"
-            }
+        ).map { _, name, _, arguments in
+            Directive(name: name, arguments: arguments.wrappedValue ?? [])
         }
         self.directive = directive
 
@@ -631,10 +628,10 @@ class GraphQL {
     let variable: Parser<String>
     let variableDefinition: Parser<String>
     let variableDefinitions: Parser<[String]>
-    let argument: Parser<String>
-    let arguments: Parser<[String]>
-    let directive: Parser<String>
-    let directives: Parser<[String]>
+    let argument: Parser<Argument>
+    let arguments: Parser<[Argument]>
+    let directive: Parser<Directive>
+    let directives: Parser<[Directive]>
     let selection: Parser<Selection>
     let selectionSet: Parser<[Selection]>
     let alias: Parser<String>

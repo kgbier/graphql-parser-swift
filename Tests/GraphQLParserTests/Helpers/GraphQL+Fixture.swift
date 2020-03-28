@@ -11,3 +11,5 @@ extension GraphQL.FragmentSpread : DumpEquatable {}
 extension GraphQL.TypeCondition : DumpEquatable {}
 extension GraphQL.Field : DumpEquatable {}
 extension GraphQL.Selection : DumpEquatable {}
+extension GraphQL.Directive : DumpEquatable {}
+extension GraphQL.Argument : DumpEquatable {}
