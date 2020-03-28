@@ -490,11 +490,22 @@ class GraphQL {
         // fragmentDefinition -> " 'fragment' fragmentName typeCondition directives? selectionSet "
         let fragmentDefinition = zip(
             literal("fragment"),
+            tokenSeparator,
             fragmentName,
+            tokenSeparator,
             typeCondition,
+            tokenSeparator,
             maybe(directives),
+            tokenSeparator,
             selectionSet
-        ).map { _, fragmentName, typeCondition, directives, selectionSet in fragmentName }
+        ).map { (arg) -> String in
+            let (_, _, fragmentName, _, typeCondition, _, directives, _, selectionSet) = arg
+            var directivesString = ""
+            if let directives = directives.wrappedValue {
+                directivesString = directives.joined(separator: ",")
+            }
+            return "\(fragmentName):\(typeCondition)\(directivesString)\(selectionSet)"
+        }
         self.fragmentDefinition = fragmentDefinition
 
         // inlineFragment -> " '...' typeCondition? directives? selectionSet "
@@ -531,10 +542,25 @@ class GraphQL {
         //                          selectionSet ]
         let operationDefinition = oneOf([
             zip(operationType,
+                tokenSeparator,
                 maybe(name),
+                tokenSeparator,
                 maybe(variableDefinitions),
+                tokenSeparator,
                 maybe(directives),
-                maybe(selectionSet)).map { $0.0 },
+                tokenSeparator,
+                maybe(selectionSet)
+            ).map { operationType, _, name, _, variableDefinitions, _, directives, _, selectionSet in
+                var variableDefinitionsString = ""
+                if let variableDefinitions = variableDefinitions.wrappedValue {
+                    variableDefinitionsString = variableDefinitions.joined(separator: ",")
+                }
+                var directivesString = ""
+                if let directives = directives.wrappedValue {
+                    directivesString = directives.joined()
+                }
+                return "\(operationType)>\(name.wrappedValue ?? "")$(\(variableDefinitionsString))\(directivesString)\(selectionSet.wrappedValue ?? "")"
+            },
             selectionSet,
         ])
         self.operationDefinition = operationDefinition

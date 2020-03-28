@@ -374,7 +374,21 @@ final class GraphQLTests: XCTestCase {
         XCTAssertEqual("Named", testSubject("on Named"))
         XCTAssertNil(testSubject("on"))
         XCTAssertNil(testSubject("abc"))
-        // XCTAssertNil(testSubject("onnamed")) // TODO: Fix this neatly
+        // XCTAssertNil(testSubject("onnamed")) // FIXME: Fix this neatly
+    }
+
+    func testFragmentDefinition() {
+        func testSubject(_ str: String) -> String? {
+            graphQlparser.fragmentDefinition.parse(str).match
+        }
+
+        XCTAssertEqual("named:typename{}", testSubject("fragment named on typename {}"))
+        XCTAssertEqual("named:typename{}", testSubject("fragment named on typename{}"))
+        XCTAssertEqual("named:typename@annotation[]{}", testSubject("fragment named on typename @annotation {}"))
+        XCTAssertEqual("named:typename@annotation[]{}", testSubject("fragment named on typename@annotation{}"))
+        // XCTAssertNil(testSubject("fragmentnamed on typename{}")) // FIXME: Fix this neatly
+        XCTAssertNil(testSubject("fragment namedon typename{}"))
+        // XCTAssertNil(testSubject("fragment named ontypename{}")) // FIXME: Fix this neatly
     }
 
     func testInlineFragment() {
@@ -386,6 +400,36 @@ final class GraphQLTests: XCTestCase {
         XCTAssertEqual("named{}", testSubject("...on named{}"))
         XCTAssertEqual("@annotated[]{}", testSubject("...@annotated{}"))
         XCTAssertEqual("named@annotated[]{}", testSubject("... on named @annotated { }"))
+    }
+
+    func testOperationType() {
+        func testSubject(_ str: String) -> String? {
+            graphQlparser.operationType.parse(str).match
+        }
+
+        XCTAssertEqual("query", testSubject("query"))
+        XCTAssertEqual("mutation", testSubject("mutation"))
+        XCTAssertEqual("subscription", testSubject("subscription"))
+        XCTAssertNil(testSubject("a"))
+        XCTAssertNil(testSubject("1"))
+        XCTAssertNil(testSubject(" "))
+    }
+
+    func testOperationDefinition() {
+        func testSubject(_ str: String) -> String? {
+            graphQlparser.operationDefinition.parse(str).match
+        }
+
+        XCTAssertEqual("{}", testSubject("{}"))
+        XCTAssertEqual("query>$()", testSubject("query"))
+        XCTAssertEqual("query>named$()", testSubject("query named"))
+        XCTAssertEqual("query>$(abc:Int,xyz:Int)", testSubject("query ($abc:Int, $xyz:Int)"))
+        XCTAssertEqual("query>$()@annotated[]@with[]", testSubject("query @annotated @with"))
+        XCTAssertEqual("query>$(){}", testSubject("query {}"))
+        XCTAssertEqual("query>named$(abc:Int)@annotated[]{}", testSubject("query named ($abc: Int) @annotated {}"))
+        XCTAssertEqual("mutation>named$(abc:Int)@annotated[]{}", testSubject("mutation named ($abc: Int) @annotated {}"))
+        XCTAssertEqual("subscription>named$(abc:Int)@annotated[]{}", testSubject("subscription named ($abc: Int) @annotated {}"))
+        XCTAssertNil(testSubject("invalid named ($abc: Int) @annotated {}"))
     }
 
     //    func testSandbox() {
