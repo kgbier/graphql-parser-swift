@@ -495,8 +495,4 @@ final class GraphQLTests: XCTestCase {
             testSubject("query named ($abc: Int) @annotated {} \n fragment named on typename @annotated {}")
         )
     }
-
-    //    func testSandbox() {
-    //        dump(graphQlparser.selectionSet.parse("{ hello, world }"))
-    //    }
 }
