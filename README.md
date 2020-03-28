@@ -10,6 +10,6 @@ Current functionality is limited to understanding a GraphQL Query as detailed in
 official [spec](https://spec.graphql.org/June2018/), and producing simple domain specific strings.
 
 ### Limitations:
-- Does not parse into an AST
+- [WIP] Does not parse into an AST (abstract syntax tree)
 - Does not support Unicode literals
 - Does not support block strings
