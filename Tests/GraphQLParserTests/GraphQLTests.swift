@@ -342,7 +342,41 @@ final class GraphQLTests: XCTestCase {
         XCTAssertEqual("alias:named(with:123)@annotated[with:456]{:also()}", testSubject("alias:named(with:123)@annotated(with:456){ also }"))
         XCTAssertEqual("alias:named(with:123)@annotated[with:456]{:also()}", testSubject("alias : named ( with : 123 ) @annotated ( with: 456 ) { also }"))
     }
-    
+
+    func testFragmentName() {
+        func testSubject(_ str: String) -> String? {
+            graphQlparser.fragmentName.parse(str).match
+        }
+
+        XCTAssertEqual("named", testSubject("named"))
+        XCTAssertEqual("Named", testSubject("Named"))
+        XCTAssertNil(testSubject("on"))
+    }
+
+    func testFragmentSpread() {
+        func testSubject(_ str: String) -> String? {
+            graphQlparser.fragmentSpread.parse(str).match
+        }
+
+        XCTAssertEqual("named", testSubject("...named"))
+        XCTAssertEqual("named@annotated[]", testSubject("...named@annotated"))
+        XCTAssertEqual("Named@annotated[]", testSubject("... Named @annotated"))
+        XCTAssertNil(testSubject("..."))
+        XCTAssertNil(testSubject("... 123"))
+    }
+
+    func testTypeCondition() {
+        func testSubject(_ str: String) -> String? {
+            graphQlparser.typeCondition.parse(str).match
+        }
+
+        XCTAssertEqual("named", testSubject("on named"))
+        XCTAssertEqual("Named", testSubject("on Named"))
+        XCTAssertNil(testSubject("on"))
+        XCTAssertNil(testSubject("abc"))
+        // XCTAssertNil(testSubject("onnamed")) // TODO: Fix this neatly
+    }
+
     //    func testSandbox() {
     //        dump(graphQlparser.selectionSet.parse("{ hello, world }"))
     //    }

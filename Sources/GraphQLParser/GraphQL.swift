@@ -465,16 +465,26 @@ class GraphQL {
         // fragmentSpread -> " '...' fragmentName directives? "
         let fragmentSpread = zip(
             literal("..."),
+            tokenSeparator,
             fragmentName,
+            tokenSeparator,
             maybe(directives)
-        ).map { _, fragmentName, directives in fragmentName }
+        ).map { (arg) -> String in
+            let (_, _, fragmentName, _, directives) = arg
+            var directivesString = ""
+            if let directives = directives.wrappedValue {
+                directivesString = directives.joined(separator: ",")
+            }
+            return "\(fragmentName)\(directivesString)"
+        }
         self.fragmentSpread = fragmentSpread
 
         // typeCondition -> " 'on' namedType "
         let typeCondition = zip(
             literal("on"),
+            tokenSeparator,
             namedType
-        ).map { _, namedType in namedType }
+        ).map { _, _, namedType in namedType }
         self.typeCondition = typeCondition
 
         // fragmentDefinition -> " 'fragment' fragmentName typeCondition directives? selectionSet "
