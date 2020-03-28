@@ -498,13 +498,8 @@ class GraphQL {
             maybe(directives),
             tokenSeparator,
             selectionSet
-        ).map { (arg) -> String in
-            let (_, _, fragmentName, _, typeCondition, _, directives, _, selectionSet) = arg
-            var directivesString = ""
-            if let directives = directives.wrappedValue {
-                directivesString = directives.joined(separator: ",")
-            }
-            return "\(fragmentName):\(typeCondition)\(directivesString)\(selectionSet)"
+        ).map { _, _, fragmentName, _, typeCondition, _, directives, _, selectionSet in
+            FragmentDefinition(name: fragmentName, typeCondition: typeCondition, directives: directives.wrappedValue ?? [], selectionSet: selectionSet)
         }
         self.fragmentDefinition = fragmentDefinition
 
@@ -551,30 +546,22 @@ class GraphQL {
                 tokenSeparator,
                 maybe(selectionSet)
             ).map { operationType, _, name, _, variableDefinitions, _, directives, _, selectionSet in
-                var variableDefinitionsString = ""
-                if let variableDefinitions = variableDefinitions.wrappedValue {
-                    variableDefinitionsString = variableDefinitions.joined(separator: ",")
-                }
-                var directivesString = ""
-                if let directives = directives.wrappedValue {
-                    directivesString = directives.joined()
-                }
-                return "\(operationType)>\(name.wrappedValue ?? "")$(\(variableDefinitionsString))\(directivesString)\(selectionSet.wrappedValue ?? "")"
+                OperationDefinition.operation(definition: OperationDefinition.Operation(operationType: operationType, name: name.wrappedValue, variableDefinitions: variableDefinitions.wrappedValue ?? [], directives: directives.wrappedValue ?? [], selectionSet: selectionSet.wrappedValue))
             },
-            selectionSet,
+            selectionSet.map(OperationDefinition.selectionSet),
         ])
         self.operationDefinition = operationDefinition
 
         // executableDefinition -> [ operationDefinition fragmentDefinition ]
         let executableDefinition = oneOf([
-            operationDefinition,
-            fragmentDefinition,
+            operationDefinition.map(ExecutableDefinition.operation),
+            fragmentDefinition.map(ExecutableDefinition.fragment),
         ])
         self.executableDefinition = executableDefinition
 
         // definition -> [ executableDefinition typeSystemDefinition TypeSystemExtension ]
         let definition = oneOf([
-            executableDefinition
+            executableDefinition.map(Definition.executable)
             // typeSystemDefinition, // GraphQL schema and other types not supported
             // TypeSystemExtension, // GraphQL schema and other types not supported
         ])
@@ -582,6 +569,7 @@ class GraphQL {
 
         // document -> { definition }
         let document = oneOrMore(definition, separatedBy: tokenSeparator)
+            .map { Document(definitions: $0) }
         self.document = document
 
         /// Real parsing behaviour for deferred parsers is defined here.
@@ -659,11 +647,11 @@ class GraphQL {
     let fragmentName: Parser<String>
     let fragmentSpread: Parser<String>
     let typeCondition: Parser<String>
-    let fragmentDefinition: Parser<String>
+    let fragmentDefinition: Parser<FragmentDefinition>
     let inlineFragment: Parser<String>
     let operationType: Parser<String>
-    let operationDefinition: Parser<String>
-    let executableDefinition: Parser<String>
-    let definition: Parser<String>
-    let document: Parser<[String]>
+    let operationDefinition: Parser<OperationDefinition>
+    let executableDefinition: Parser<ExecutableDefinition>
+    let definition: Parser<Definition>
+    let document: Parser<Document>
 }
