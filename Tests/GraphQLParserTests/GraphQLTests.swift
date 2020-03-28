@@ -66,14 +66,14 @@ final class GraphQLTests: XCTestCase {
 
     // alias: integerPart
     func testIntValue() {
-        func testSubject(_ str: String) -> String? {
+        func testSubject(_ str: String) -> GraphQL.Value? {
             graphQlparser.intValue.parse(str).match
         }
         
-        XCTAssertEqual("123", testSubject("123"))
-        XCTAssertEqual("-123", testSubject("-123"))
+        XCTAssertEqual(.int(value: "123"), testSubject("123"))
+        XCTAssertEqual(.int(value: "-123"), testSubject("-123"))
         XCTAssertNil(testSubject("0123"))
-        XCTAssertEqual("-0", testSubject("-0"))
+        XCTAssertEqual(.int(value: "-0"), testSubject("-0"))
     }
 
     func testExponentIndicator() {
@@ -89,12 +89,12 @@ final class GraphQLTests: XCTestCase {
     }
 
     func testSign() {
-        func testSubject(_ str: String) -> Character? {
+        func testSubject(_ str: String) -> FloatingPointSign? {
             graphQlparser.sign.parse(str).match
         }
 
-        XCTAssertEqual("+", testSubject("+"))
-        XCTAssertEqual("-", testSubject("-"))
+        XCTAssertEqual(.plus, testSubject("+"))
+        XCTAssertEqual(.minus, testSubject("-"))
         XCTAssertNil(testSubject("a"))
         XCTAssertNil(testSubject("1"))
         XCTAssertNil(testSubject(" "))
@@ -132,59 +132,59 @@ final class GraphQLTests: XCTestCase {
     }
 
     func testFloatValue() {
-        func testSubject(_ str: String) -> String? {
+        func testSubject(_ str: String) -> GraphQL.Value? {
             graphQlparser.floatValue.parse(str).match
         }
 
-        XCTAssertEqual("6.0221413:e+23", testSubject("6.0221413e23"))
-        XCTAssertEqual("6.123", testSubject("6.123"))
-        XCTAssertEqual("1:e+10", testSubject("1e10"))
+        XCTAssertEqual(.float(value: "6.0221413:e+23"), testSubject("6.0221413e23"))
+        XCTAssertEqual(.float(value: "6.123"), testSubject("6.123"))
+        XCTAssertEqual(.float(value: "1:e+10"), testSubject("1e10"))
     }
 
     func testBooleanValue() {
-        func testSubject(_ str: String) -> String? {
+        func testSubject(_ str: String) -> GraphQL.Value? {
             graphQlparser.booleanValue.parse(str).match
         }
 
-        XCTAssertEqual("bool(true)", testSubject("true"))
-        XCTAssertEqual("bool(false)", testSubject("false"))
+        XCTAssertEqual(.boolean(value: true), testSubject("true"))
+        XCTAssertEqual(.boolean(value: false), testSubject("false"))
         XCTAssertNil(testSubject("a"))
         XCTAssertNil(testSubject("1"))
         XCTAssertNil(testSubject(" "))
     }
 
     func testStringValue() {
-        func testSubject(_ str: String) -> String? {
+        func testSubject(_ str: String) -> GraphQL.Value? {
             graphQlparser.stringValue.parse(str).match
         }
 
-        XCTAssertEqual("hello sailor", testSubject("\"hello sailor\""))
-        XCTAssertEqual(" hello sailor ", testSubject("\" hello sailor \""))
-        XCTAssertEqual("123 abc", testSubject("\"123 abc\""))
-        XCTAssertEqual("", testSubject("\"\""))
+        XCTAssertEqual(.string(value: "hello sailor"), testSubject("\"hello sailor\""))
+        XCTAssertEqual(.string(value: " hello sailor "), testSubject("\" hello sailor \""))
+        XCTAssertEqual(.string(value: "123 abc"), testSubject("\"123 abc\""))
+        XCTAssertEqual(.string(value: ""), testSubject("\"\""))
         XCTAssertNil(testSubject("hello sailor\""))
         XCTAssertNil(testSubject("\"hello sailor"))
     }
 
     func testNullValue() {
-        func testSubject(_ str: String) -> String? {
+        func testSubject(_ str: String) -> GraphQL.Value? {
             graphQlparser.nullValue.parse(str).match
         }
 
-        XCTAssertEqual("<null>", testSubject("null"))
+        XCTAssertEqual(.null, testSubject("null"))
         XCTAssertNil(testSubject("012"))
         XCTAssertNil(testSubject("."))
         XCTAssertNil(testSubject("a"))
     }
 
     func testEnumValue() {
-        func testSubject(_ str: String) -> String? {
+        func testSubject(_ str: String) -> GraphQL.Value? {
             graphQlparser.enumValue.parse(str).match
         }
 
-        XCTAssertEqual("abc", testSubject("abc"))
-        XCTAssertEqual("abc123", testSubject("abc123"))
-        XCTAssertEqual("ENUM_VALUE", testSubject("ENUM_VALUE"))
+        XCTAssertEqual(.enum(value: "abc"), testSubject("abc"))
+        XCTAssertEqual(.enum(value: "abc123"), testSubject("abc123"))
+        XCTAssertEqual(.enum(value: "ENUM_VALUE"), testSubject("ENUM_VALUE"))
         XCTAssertNil(testSubject("true"))
         XCTAssertNil(testSubject("false"))
         XCTAssertNil(testSubject("null"))
@@ -192,35 +192,37 @@ final class GraphQLTests: XCTestCase {
     }
 
     func testListValue() {
-        func testSubject(_ str: String) -> String? {
+        func testSubject(_ str: String) -> GraphQL.Value? {
             graphQlparser.listValue.parse(str).match
         }
 
-        XCTAssertEqual("[]", testSubject("[ ]"))
-        XCTAssertEqual("[]", testSubject("[]"))
-        XCTAssertEqual("[]", testSubject("[ , ]"))
-        XCTAssertEqual("[bool(true)]", testSubject("[true]"))
-        XCTAssertEqual("[bool(true),bool(false)]", testSubject("[ true, false ]"))
+        XCTAssertEqual(.list(value: []), testSubject("[ ]"))
+        XCTAssertEqual(.list(value: []), testSubject("[]"))
+        XCTAssertEqual(.list(value: []), testSubject("[ , ]"))
+        XCTAssertEqual(.list(value: [.boolean(value: true)]), testSubject("[true]"))
+        XCTAssertEqual(.list(value: [.boolean(value: true), .boolean(value: false)]), testSubject("[ true, false ]"))
     }
 
     func testObjectField() {
-        func testSubject(_ str: String) -> String? {
+        func testSubject(_ str: String) -> GraphQL.ObjectField? {
             graphQlparser.objectField.parse(str).match
         }
-        XCTAssertEqual("name:123", testSubject("name : 123"))
-        XCTAssertEqual("name:abc", testSubject("name : \"abc\""))
+        XCTAssertEqual(.init(name: "name", value: .int(value: "123")), testSubject("name : 123"))
+        XCTAssertEqual(.init(name: "name", value: .string(value: "abc")), testSubject("name : \"abc\""))
     }
 
     func testObjectValue() {
-        func testSubject(_ str: String) -> String? {
+        func testSubject(_ str: String) -> GraphQL.Value? {
             graphQlparser.objectValue.parse(str).match
         }
-        XCTAssertEqual("{}", testSubject("{}"))
-        XCTAssertEqual("{}", testSubject("{ }"))
-        XCTAssertEqual("{}", testSubject("{ , }"))
-        XCTAssertEqual("{name:123}", testSubject("{name:123}"))
-        XCTAssertEqual("{name:123}", testSubject("{ name : 123 }"))
-        XCTAssertEqual("{nameone:123,nametwo:abc}", testSubject("{ nameone : 123, nametwo : \"abc\" }"))
+        XCTAssertEqual(.object(value: []), testSubject("{}"))
+        XCTAssertEqual(.object(value: []), testSubject("{ }"))
+        XCTAssertEqual(.object(value: []), testSubject("{ , }"))
+        XCTAssertEqual(.object(value: [.init(name: "name", value: .int(value: "123"))]), testSubject("{name:123}"))
+        XCTAssertEqual(.object(value: [.init(name: "name", value: .int(value: "123"))]), testSubject("{ name : 123 }"))
+        XCTAssertEqual(.object(value: [.init(name: "nameone", value: .int(value: "123")),
+                                       .init(name: "nametwo", value: .string(value: "abc"))]),
+                       testSubject("{ nameone : 123, nametwo : \"abc\" }"))
     }
 
     func testListType() {
@@ -246,12 +248,12 @@ final class GraphQLTests: XCTestCase {
     }
 
     func testDefaultValue() {
-        func testSubject(_ str: String) -> String? {
+        func testSubject(_ str: String) -> GraphQL.Value? {
             graphQlparser.defaultValue.parse(str).match
         }
 
-        XCTAssertEqual("abc", testSubject("= \"abc\""))
-        XCTAssertEqual("123", testSubject("=123"))
+        XCTAssertEqual(.string(value: "abc"), testSubject("= \"abc\""))
+        XCTAssertEqual(.int(value: "123"), testSubject("=123"))
     }
 
     func testVariable() {
@@ -269,8 +271,8 @@ final class GraphQLTests: XCTestCase {
         }
 
         XCTAssertEqual(.init(variable: "abc", type: "Int", defaultValue: nil), testSubject("$abc : Int"))
-        XCTAssertEqual(.init(variable: "abc", type: "Int", defaultValue: "123"), testSubject("$abc : Int = 123"))
-        XCTAssertEqual(.init(variable: "abc", type: "Int", defaultValue: "123"), testSubject("$abc:Int=123"))
+        XCTAssertEqual(.init(variable: "abc", type: "Int", defaultValue: .int(value: "123")), testSubject("$abc : Int = 123"))
+        XCTAssertEqual(.init(variable: "abc", type: "Int", defaultValue: .int(value: "123")), testSubject("$abc:Int=123"))
     }
 
     func testArgument() {
@@ -278,9 +280,9 @@ final class GraphQLTests: XCTestCase {
             graphQlparser.argument.parse(str).match
         }
 
-        XCTAssertEqual(.init(name: "abc", value: "xyz"), testSubject("abc : \"xyz\""))
-        XCTAssertEqual(.init(name: "abc", value: "123"), testSubject("abc : 123"))
-        XCTAssertEqual(.init(name: "abc", value: "123"), testSubject("abc:123"))
+        XCTAssertEqual(.init(name: "abc", value: .string(value: "xyz")), testSubject("abc : \"xyz\""))
+        XCTAssertEqual(.init(name: "abc", value: .int(value: "123")), testSubject("abc : 123"))
+        XCTAssertEqual(.init(name: "abc", value: .int(value: "123")), testSubject("abc:123"))
     }
 
     func testArguments() {
@@ -288,11 +290,11 @@ final class GraphQLTests: XCTestCase {
             graphQlparser.arguments.parse(str).match
         }
 
-        XCTAssertEqual([.init(name: "abc", value: "xyz")], testSubject("(abc:\"xyz\")"))
-        XCTAssertEqual([.init(name: "abc", value: "123")], testSubject("(abc:123)"))
-        XCTAssertEqual([.init(name: "abc", value: "123")], testSubject("( abc : 123 )"))
-        XCTAssertEqual([.init(name: "abc", value: "123"),
-                        .init(name: "def", value: "xyz")],
+        XCTAssertEqual([.init(name: "abc", value: .string(value: "xyz"))], testSubject("(abc:\"xyz\")"))
+        XCTAssertEqual([.init(name: "abc", value: .int(value: "123"))], testSubject("(abc:123)"))
+        XCTAssertEqual([.init(name: "abc", value: .int(value: "123"))], testSubject("( abc : 123 )"))
+        XCTAssertEqual([.init(name: "abc", value: .int(value: "123")),
+                        .init(name: "def", value: .string(value: "xyz"))],
                        testSubject("(abc : 123, def : \"xyz\")"))
     }
 
@@ -301,9 +303,9 @@ final class GraphQLTests: XCTestCase {
             graphQlparser.directive.parse(str).match
         }
 
-        XCTAssertEqual(.init(name: "named", arguments: [.init(name: "abc", value: "xyz")]),
+        XCTAssertEqual(.init(name: "named", arguments: [.init(name: "abc", value: .string(value: "xyz"))]),
                        testSubject("@named (abc : \"xyz\")"))
-        XCTAssertEqual(.init(name: "named", arguments: [.init(name: "abc", value: "xyz")]),
+        XCTAssertEqual(.init(name: "named", arguments: [.init(name: "abc", value: .string(value: "xyz"))]),
                        testSubject("@named(abc : \"xyz\")"))
     }
 
@@ -312,8 +314,8 @@ final class GraphQLTests: XCTestCase {
             graphQlparser.directives.parse(str).match
         }
 
-        XCTAssertEqual([.init(name: "named", arguments: [.init(name: "abc", value: "xyz")]),
-                        .init(name: "other", arguments: [.init(name: "abc", value: "xyz")])],
+        XCTAssertEqual([.init(name: "named", arguments: [.init(name: "abc", value: .string(value: "xyz"))]),
+                        .init(name: "other", arguments: [.init(name: "abc", value: .string(value: "xyz"))])],
                        testSubject("@named (abc : \"xyz\") @other (abc : \"xyz\")"))
     }
 
@@ -352,15 +354,15 @@ final class GraphQLTests: XCTestCase {
                        testSubject("named"))
         XCTAssertEqual(.init(alias: "aliased", name: "named", arguments: [], directives: [], selectionSet: []),
                        testSubject("aliased:named"))
-        XCTAssertEqual(.init(alias: nil, name: "named", arguments: [.init(name: "with", value: "123")], directives: [], selectionSet: []),
+        XCTAssertEqual(.init(alias: nil, name: "named", arguments: [.init(name: "with", value: .int(value: "123"))], directives: [], selectionSet: []),
                        testSubject("named(with:123)"))
         XCTAssertEqual(.init(alias: nil, name: "named", arguments: [], directives: [.init(name: "annotated", arguments: [])], selectionSet: []),
                        testSubject("named@annotated"))
-        XCTAssertEqual(.init(alias: nil, name: "named", arguments: [], directives: [.init(name: "annotated", arguments: [.init(name: "with", value: "123")])], selectionSet: []),
+        XCTAssertEqual(.init(alias: nil, name: "named", arguments: [], directives: [.init(name: "annotated", arguments: [.init(name: "with", value: .int(value: "123"))])], selectionSet: []),
                        testSubject("named@annotated(with:123)"))
-        XCTAssertEqual(.init(alias: "alias", name: "named", arguments: [.init(name: "with", value: "123")], directives: [.init(name: "annotated", arguments: [.init(name: "with", value: "456")])], selectionSet: [.field(selection: .init(alias: nil, name: "also", arguments: [], directives: [], selectionSet: []))]),
+        XCTAssertEqual(.init(alias: "alias", name: "named", arguments: [.init(name: "with", value: .int(value: "123"))], directives: [.init(name: "annotated", arguments: [.init(name: "with", value: .int(value: "456"))])], selectionSet: [.field(selection: .init(alias: nil, name: "also", arguments: [], directives: [], selectionSet: []))]),
                        testSubject("alias:named(with:123)@annotated(with:456){ also }"))
-        XCTAssertEqual(.init(alias: "alias", name: "named", arguments: [.init(name: "with", value: "123")], directives: [.init(name: "annotated", arguments: [.init(name: "with", value: "456")])], selectionSet: [.field(selection: .init(alias: nil, name: "also", arguments: [], directives: [], selectionSet: []))]),
+        XCTAssertEqual(.init(alias: "alias", name: "named", arguments: [.init(name: "with", value: .int(value: "123"))], directives: [.init(name: "annotated", arguments: [.init(name: "with", value: .int(value: "456"))])], selectionSet: [.field(selection: .init(alias: nil, name: "also", arguments: [], directives: [], selectionSet: []))]),
                        testSubject("alias : named ( with : 123 ) @annotated ( with: 456 ) { also }"))
     }
 

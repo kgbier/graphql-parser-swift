@@ -74,12 +74,29 @@ extension GraphQL {
 
     struct Argument {
         let name: String
-        let value: String
+        let value: Value
     }
 
     struct VariableDefinition {
         let variable: String
         let type: String
-        let defaultValue: String?
+        let defaultValue: Value?
+    }
+
+    enum Value {
+        case variable(name: String)
+        case int(value: String)
+        case float(value: String)
+        case string(value: String)
+        case boolean(value: Bool)
+        case null
+        case `enum`(value: String)
+        case list(value: [Value])
+        case object(value: [ObjectField])
+    }
+
+    struct ObjectField {
+        let name: String
+        let value: Value
     }
 }

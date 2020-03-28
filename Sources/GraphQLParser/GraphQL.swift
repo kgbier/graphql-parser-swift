@@ -63,7 +63,7 @@ class GraphQL {
 
         // MARK: Values
 
-        var valueDeferred: Parser<String> = .never
+        var valueDeferred: Parser<Value> = .never
         // value -> [ variable intValue floatValue stringValue booleanValue nullValue listValue objectValue ]
         let value = deferred { valueDeferred }
         self.value = value
@@ -119,7 +119,7 @@ class GraphQL {
         self.integerPart = integerPart
 
         // intValue -> integerPart
-        let intValue = integerPart
+        let intValue = integerPart.map { Value.int(value: $0)}
         self.intValue = intValue
 
         // exponentIndicator -> [ 'e' 'E' ]
@@ -131,8 +131,8 @@ class GraphQL {
 
         // sign -> [ '+' '-' ]
         let sign = oneOf([
-            char(of: "+"),
-            char(of: "-"),
+            literal("+").map { FloatingPointSign.plus },
+            literal("-").map { .minus },
         ])
         self.sign = sign
 
@@ -151,7 +151,7 @@ class GraphQL {
         ).map { (arg) -> String in
             let (_, sign, digits) = arg
             if let sign = sign.wrappedValue {
-                return "e\(sign)\(String(digits))"
+                return "e\(sign == .plus ? "+" : "-" )\(String(digits))"
             } else {
                 return "e+\(String(digits))"
             }
@@ -162,16 +162,19 @@ class GraphQL {
         //                 " integerPart exponentPart "
         //                 " integerPart fractionalPart exponentPart " ]
         let floatValue = oneOf([
-            zip(integerPart, fractionalPart, exponentPart).map { "\($0.0).\($0.1):\($0.2)" },
-            zip(integerPart, fractionalPart).map { "\($0.0).\($0.1)" },
-            zip(integerPart, exponentPart).map { "\($0.0):\($0.1)" },
+            zip(integerPart, fractionalPart, exponentPart)
+                .map { Value.float(value: "\($0.0).\($0.1):\($0.2)") },
+            zip(integerPart, fractionalPart)
+                .map { .float(value: "\($0.0).\($0.1)") },
+            zip(integerPart, exponentPart)
+                .map { .float(value: "\($0.0):\($0.1)") },
         ])
         self.floatValue = floatValue
 
         // booleanValue -> [ 'true' 'false' ]
         let booleanValue = oneOf([
-            literal("true").map { "bool(true)" },
-            literal("false").map { "bool(false)" },
+            literal("true").map { Value.boolean(value: true) },
+            literal("false").map { .boolean(value: false) },
         ])
         self.booleanValue = booleanValue
 
@@ -218,7 +221,7 @@ class GraphQL {
         let stringValue = //oneOf([
             zip(literal("\""),
                 zeroOrMore(stringCharacter),
-                literal("\"")).map { _, chars, _ in String(chars) } //,
+                literal("\"")).map { _, chars, _ in Value.string(value: String(chars)) } //,
         //    zip(literal("\"\"\""),
         //        zeroOrMore(blockStringCharacter),
         //        literal("\"\"\"")),
@@ -226,7 +229,7 @@ class GraphQL {
         self.stringValue = stringValue
 
         // nullValue -> 'null'
-        let nullValue = literal("null").map { "<null>" }
+        let nullValue = literal("null").map { Value.null }
         self.nullValue = nullValue
 
         // enumValue -> name != [ booleanValue nullValue ]
@@ -236,7 +239,7 @@ class GraphQL {
                 nullValue.erase(),
             ]),
             name
-        ).map { _, n in n}
+        ).map { _, name in Value.enum(value: name) }
         self.enumValue = enumValue
 
         // listValue -> [ " '[' ']' "
@@ -245,14 +248,14 @@ class GraphQL {
             zip(literal("["),
                 tokenSeparator,
                 literal("]")
-            ).map { _ in "[]" },
+            ).map { _ in Value.list(value: []) },
             zip(literal("["),
                 tokenSeparator,
                 zeroOrMore(value, separatedBy: tokenSeparator),
                 tokenSeparator,
                 literal("]")
             ).map { _, _, values, _, _ in values }
-                .map { "[" + $0.joined(separator: ",") + "]" },
+                .map { Value.list(value: $0) },
         ])
         self.listValue = listValue
 
@@ -263,7 +266,9 @@ class GraphQL {
             literal(":"),
             tokenSeparator,
             value
-        ).map { name, _, _, _, value in "\(name):\(value)"}
+        ).map { name, _, _, _, value in
+            ObjectField(name: name, value: value)
+        }
         self.objectField = objectField
 
         // objectValue -> [ " '{' '}' "
@@ -273,14 +278,14 @@ class GraphQL {
                 tokenSeparator,
                 literal("}")
             ).map { _ in [] }
-                .map { _ in "{}" },
+                .map { _ in Value.object(value: []) },
             zip(literal("{"),
                 tokenSeparator,
                 oneOrMore(objectField, separatedBy: tokenSeparator),
                 tokenSeparator,
                 literal("}")
             ).map { _, _, fields, _, _ in fields }
-                .map { "{" + $0.joined(separator: ",") + "}" },
+                .map { Value.object(value: $0) },
         ])
         self.objectValue = objectValue
 
@@ -328,8 +333,12 @@ class GraphQL {
         let variable = zip(
             literal("$"),
             name
-        ).map{ _, name in name }
+        ).map{ _, name in  name }
         self.variable = variable
+
+        /// Wrapper to use as a possible `value`
+        let variableValue = variable.map { Value.variable(name: $0)}
+        self.variableValue = variableValue
 
         // variableDefinition -> " variable ':' type defaultValue? "
         let variableDefinition = zip(
@@ -563,12 +572,13 @@ class GraphQL {
         /// Deferred values are overwritten on `initialise` and then picked up by the canonical `Parser` at runtime.
 
         valueDeferred = oneOf([
-            variable,
+            variableValue,
             stringValue,
             objectValue,
             listValue,
             nullValue,
             booleanValue,
+            enumValue,
             floatValue,
             intValue,
         ])
@@ -594,33 +604,34 @@ class GraphQL {
     let commentChar: Parser<Character>
     let comment: Parser<Void>
     let tokenSeparator: Parser<Void>
-    let value: Parser<String>
+    let value: Parser<Value>
     let negativeSign: Parser<Character>
     let digit: Parser<Character>
     let nonZeroDigit: Parser<Character>
     let integerPart: Parser<String>
-    let intValue: Parser<String>
+    let intValue: Parser<Value>
     let exponentIndicator: Parser<Void>
-    let sign: Parser<Character>
+    let sign: Parser<FloatingPointSign>
     let fractionalPart: Parser<String>
     let exponentPart: Parser<String>
-    let floatValue: Parser<String>
-    let booleanValue: Parser<String>
+    let floatValue: Parser<Value>
+    let booleanValue: Parser<Value>
     let escapedUnicode: Parser<Character>
     let escapedCharacter: Parser<Character>
     let stringCharacter: Parser<Character>
-    let stringValue: Parser<String>
-    let nullValue: Parser<String>
-    let enumValue: Parser<String>
-    let listValue: Parser<String>
-    let objectField: Parser<String>
-    let objectValue: Parser<String>
+    let stringValue: Parser<Value>
+    let nullValue: Parser<Value>
+    let enumValue: Parser<Value>
+    let listValue: Parser<Value>
+    let objectField: Parser<ObjectField>
+    let objectValue: Parser<Value>
     let type: Parser<String>
     let namedType: Parser<String>
     let listType: Parser<String>
     let nonNullType: Parser<String>
-    let defaultValue: Parser<String>
+    let defaultValue: Parser<Value>
     let variable: Parser<String>
+    let variableValue: Parser<Value>
     let variableDefinition: Parser<VariableDefinition>
     let variableDefinitions: Parser<[VariableDefinition]>
     let argument: Parser<Argument>
