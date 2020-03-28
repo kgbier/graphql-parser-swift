@@ -6,22 +6,32 @@ extension GraphQLTests {
     //   `swift test --generate-linuxmain`
     // to regenerate.
     static let __allTests__GraphQLTests = [
+        ("testArgument", testArgument),
+        ("testArguments", testArguments),
         ("testBooleanValue", testBooleanValue),
+        ("testDefaultValue", testDefaultValue),
         ("testDigit", testDigit),
+        ("testDirective", testDirective),
+        ("testDirectives", testDirectives),
         ("testEnumValue", testEnumValue),
         ("testExponentIndicator", testExponentIndicator),
         ("testExponentPart", testExponentPart),
         ("testFloatValue", testFloatValue),
         ("testFractionalPart", testFractionalPart),
         ("testIntValue", testIntValue),
+        ("testListType", testListType),
         ("testListValue", testListValue),
         ("testName", testName),
         ("testNegativeSign", testNegativeSign),
+        ("testNonNullType", testNonNullType),
         ("testnonZeroDigit", testnonZeroDigit),
         ("testNullValue", testNullValue),
+        ("testObjectField", testObjectField),
         ("testObjectValue", testObjectValue),
         ("testSign", testSign),
         ("testStringValue", testStringValue),
+        ("testVariable", testVariable),
+        ("testVariableDefinition", testVariableDefinition),
     ]
 }
 
