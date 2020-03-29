@@ -590,7 +590,7 @@ class GraphQL {
         self.document = document
 
         /// Real parsing behaviour for deferred parsers is defined here.
-        /// Deferred values are overwritten on `initialise` and then picked up by the canonical `Parser` at runtime.
+        /// Deferred values are overwritten on `init` and then picked up by the canonical `Parser` at runtime.
 
         valueDeferred = oneOf([
             variableValue,
