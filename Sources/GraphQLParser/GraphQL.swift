@@ -48,7 +48,7 @@ class GraphQL {
         /// Behaves like whitespace and may appear after any token, or before a line terminator
         let comment = zip(
             literal("#"),
-            commentChar
+            zeroOrMore(commentChar)
         ).erase()
         self.comment = comment
 

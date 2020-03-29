@@ -25,7 +25,34 @@ final class GraphQLParserTests: XCTestCase {
         testQuery(query)
     }
 
-    // TODO: Comments
+    func testComments() {
+        let query = """
+        {
+          hero {
+            name
+            # Queries can have comments!
+            friends {
+              name
+            }
+          }
+        }
+        """
+        testQuery(query)
+    }
+
+    func testCommentsInline() {
+        let query = """
+        {
+          hero {
+            name # Comments run from the start of the comment to the end of the line
+            # friends {
+            #   name
+            # }
+          }
+        }
+        """
+        testQuery(query)
+    }
 
     func testArguments() {
         let query = """
