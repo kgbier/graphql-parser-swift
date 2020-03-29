@@ -17,7 +17,14 @@ class GraphQL {
         self.name = name
 
         // whiteSpace -> [ '\s' '\t' ]
-        /// Separator Tokens, found inside `string` or `comment`
+        /**
+         White space is used to improve legibility of source text and act as separation between tokens,
+         and any amount of white space may appear before or after any token.
+         White space between tokens is not significant to the semantic meaning of a GraphQL Document,
+         however white space characters may appear within a String or Comment token.[1]
+
+         [1] https://spec.graphql.org/June2018/#sec-White-Space
+         */
         let whiteSpace = oneOf([
             literal(" "),
             literal("\t"),
@@ -25,7 +32,13 @@ class GraphQL {
         self.whiteSpace = whiteSpace
 
         // lineTerminator -> [ '\n' '\r' '\f' ]
-        /// Separator Tokens, not found anywhere else
+        /**
+         Like white space, line terminators are used to improve the legibility of source text,
+         any amount may appear before or after any other token and have no significance to the semantic meaning of a GraphQL Document.
+         Line terminators are not found within any other token. [1]
+
+         [1] https://spec.graphql.org/June2018/#sec-Line-Terminators
+         */
         let lineTerminator = oneOf([
             literal("\n"),
             literal("\r"),
@@ -59,6 +72,14 @@ class GraphQL {
             comma,
         ])).erase()
         self.tokenSeparator = tokenSeparator
+
+        let requiredTokenSeparator = oneOrMore(oneOf([
+            comment,
+            lineTerminator,
+            whiteSpace,
+            comma,
+        ])).erase()
+        self.requiredTokenSeparator = requiredTokenSeparator
 
 
         // MARK: Values
@@ -475,7 +496,7 @@ class GraphQL {
         // typeCondition -> " 'on' namedType "
         let typeCondition = zip(
             literal("on"),
-            tokenSeparator,
+            requiredTokenSeparator,
             namedType
         ).map { _, _, namedType in TypeCondition(namedType: namedType) }
         self.typeCondition = typeCondition
@@ -483,9 +504,9 @@ class GraphQL {
         // fragmentDefinition -> " 'fragment' fragmentName typeCondition directives? selectionSet "
         let fragmentDefinition = zip(
             literal("fragment"),
-            tokenSeparator,
+            requiredTokenSeparator,
             fragmentName,
-            tokenSeparator,
+            requiredTokenSeparator,
             typeCondition,
             tokenSeparator,
             maybe(directives),
@@ -604,6 +625,7 @@ class GraphQL {
     internal let commentChar: Parser<Character>
     internal let comment: Parser<Void>
     internal let tokenSeparator: Parser<Void>
+    internal let requiredTokenSeparator: Parser<Void>
     internal let value: Parser<Value>
     internal let negativeSign: Parser<Character>
     internal let digit: Parser<Character>

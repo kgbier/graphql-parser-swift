@@ -397,7 +397,7 @@ final class GraphQLTests: XCTestCase {
         XCTAssertEqual(.init(namedType: "Named"), testSubject("on Named"))
         XCTAssertNil(testSubject("on"))
         XCTAssertNil(testSubject("abc"))
-        // XCTAssertNil(testSubject("onnamed")) // FIXME: Fix this neatly
+        XCTAssertNil(testSubject("onnamed"))
     }
 
     func testFragmentDefinition() {
@@ -413,9 +413,9 @@ final class GraphQLTests: XCTestCase {
                        testSubject("fragment named on typename @annotated {}"))
         XCTAssertEqual(.init(name: "named", typeCondition: .init(namedType: "typename"), directives: [.init(name: "annotated", arguments: [])], selectionSet: []),
                        testSubject("fragment named on typename@annotated{}"))
-        // XCTAssertNil(testSubject("fragmentnamed on typename{}")) // FIXME: Fix this neatly
+        XCTAssertNil(testSubject("fragmentnamed on typename{}"))
         XCTAssertNil(testSubject("fragment namedon typename{}"))
-        // XCTAssertNil(testSubject("fragment named ontypename{}")) // FIXME: Fix this neatly
+        XCTAssertNil(testSubject("fragment named ontypename{}"))
     }
 
     func testInlineFragment() {
