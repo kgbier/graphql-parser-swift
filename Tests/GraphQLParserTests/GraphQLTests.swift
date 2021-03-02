@@ -245,6 +245,7 @@ final class GraphQLTests: XCTestCase {
 
         XCTAssertEqual("[Int]!!", testSubject("[Int]!"))
         XCTAssertEqual("Int!!", testSubject("Int!"))
+        XCTAssertEqual("[Int!!]!!", testSubject("[Int!]!"))
     }
 
     func testDefaultValue() {
@@ -273,6 +274,12 @@ final class GraphQLTests: XCTestCase {
         XCTAssertEqual(.init(variable: "abc", type: "Int", defaultValue: nil), testSubject("$abc : Int"))
         XCTAssertEqual(.init(variable: "abc", type: "Int", defaultValue: .int(value: "123")), testSubject("$abc : Int = 123"))
         XCTAssertEqual(.init(variable: "abc", type: "Int", defaultValue: .int(value: "123")), testSubject("$abc:Int=123"))
+
+
+        XCTAssertEqual(.init(variable: "abc", type: "[Int]", defaultValue: nil), testSubject("$abc:[Int]"))
+        XCTAssertEqual(.init(variable: "abc", type: "[Int!!]", defaultValue: nil), testSubject("$abc:[Int!]"))
+        XCTAssertEqual(.init(variable: "abc", type: "[Int]!!", defaultValue: nil), testSubject("$abc:[Int]!"))
+        XCTAssertEqual(.init(variable: "abc", type: "[Int!!]!!", defaultValue: nil), testSubject("$abc:[Int!]!"))
     }
 
     func testArgument() {

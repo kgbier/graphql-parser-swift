@@ -605,8 +605,8 @@ class GraphQL {
         ])
 
         typeDeferred = oneOf([
-            listType,
             nonNullType,
+            listType,
             namedType,
         ])
 
