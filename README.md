@@ -6,6 +6,8 @@
 A utility for parsing GraphQL queries. Written with help from the excellent 
 [Point·Free](https://www.pointfree.co/collections/parsing).
 
+Kotlin version of this library: [kgbier/graphql-parser-kotlin](https://github.com/kgbier/graphql-parser-kotlin)
+
 Current functionality is limited to understanding a GraphQL Query as detailed in the
 official [spec](https://spec.graphql.org/June2018/), and producing an AST (abstract syntax tree).
 
